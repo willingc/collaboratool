@@ -1,0 +1,10 @@
+title: Collaboratool
+tagline: Virtualized container for portable, reproducible data science
+# pygments: true
+
+# This is the default format post.
+# For more see: http://jekyllrb.com/docs/permalinks/
+# permalink: /:categories/:year/:month/:day/:title
+
+# exclude: [".rvmrc", ".rbenv-version", "README.md", "Rakefile", "changelog.md", "style.less"]
+

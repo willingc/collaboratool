@@ -11,7 +11,7 @@
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
   <script type="text/javascript" src="javascripts/script.js"></script>
 
-  <title>Collaboratool</title>
+  <title>{{ page.title }} - {{ site.title }}</title>
   <meta name="description" content="Virtualized container for portable, reproducible data science">
 
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -22,10 +22,10 @@
 
   <div class="wrapper">
     <header>
-      <h1 class="title">Collaboratool</h1>
+        <h1 class="title">{{ site.title }}</h1>
     </header>
     <div id="container">
-      <p class="tagline">Virtualized container for portable, reproducible data science</p>
+      <p class="tagline"></p>
       <div id="main" role="main">
         <div class="download-bar">
         <div class="inner">
@@ -36,19 +36,9 @@
         <span class="blc"></span><span class="trc"></span>
         </div>
         <article class="markdown-body">
-          <h3>
-<a name="welcome-to-the-collaboratool-project" class="anchor" href="#welcome-to-the-collaboratool-project"><span class="octicon octicon-link"></span></a>Welcome to the Collaboratool Project</h3>
 
-<p>Collaboratool is an umbrella project for the creation of reproducible, reliable scientific computing environments. What problems does this do for you?</p>
+            {{ content }}
 
-<ol>
-<li>No more obscure installation issues - download and run a single virtual machine or just visit a server via a web browser.</li>
-<li>I'm teaching a class - when you tell a student that a program behaves a certain way, it does!</li>
-<li>I'm collaborating on some scientific research - now all of your collaborators can run your code without complex installation instructions.</li>
-</ol><h3>
-<a name="who-are-we" class="anchor" href="#who-are-we"><span class="octicon octicon-link"></span></a>Who are we?</h3>
-
-<p>Collaboratool is a project that started in the <a href="http://dlab.berkeley.edu">D-Lab</a>, with collaboration from <a href="http://www.eecs.berkeley.edu">EECS</a>. We're working with the <a href="http://http://statistics.berkeley.edu/computing">Statistical Computing Facility</a> to have learning environments ready to go for the spring semester.</p>
         </article>
       </div>
     </div>
@@ -69,7 +59,8 @@
     <p class="name"></p>
   </div>
 
-            <script type="text/javascript">
+          <!-- This is how GitHub set up our analytics -->
+           <script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
             document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
           </script>
