@@ -29,13 +29,13 @@ reproducible way for communication with and distribution to others.
 More specifically, we envision that BSD2 will encompass the following:
 
  * a "script" (i.e., a reproducible workflow) that creates the standard VM/image
-   with standard scientific computing software such as Python, R, git, etc.
- * a standard image, produced by the script, that can be distributed as is and
-   used on-the-fly with VirtualBox or VMWare Player with minimal dependencies
+   with standard scientific computing software such as Python, R, git, etc., 
+ * a standard binary image, produced by the script, that can be distributed as is and
+   used on-the-fly with VirtualBox or VMWare Player with minimal dependencies, and
  * an advanced "script" that represents multiple possible distributions tailored
    for different types of uses (e.g., different disciplines, different
    computational needs, class vs. research use, etc.). This script might
-   rpepresent either a sequence or a tree of possible VMs.
+   represent either a sequence or a tree of possible VMs.
 
 ### Who are we?
 
