@@ -49,4 +49,4 @@ These tools will enable the following core use cases:
 Collaboratool is a project that started in the
 [D-Lab](http://dlab.berkeley.edu), with collaboration from
 [EECS](http://www.eecs.berkeley.edu) and the [Statistical Computing
-Facility](http://http://statistics.berkeley.edu/computing).
+Facility](http://statistics.berkeley.edu/computing).
