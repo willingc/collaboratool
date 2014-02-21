@@ -41,7 +41,7 @@ These tools will enable the following core use cases:
  
   * creating a common computing environment for a course or workshop,
   * creating a common computational environment to be shared by a group of researchers or students, and
-  * disseminating the computational environment so outsiders can reproduce the results of a research group.
+  * disseminating the computational environment so outsiders can reproduce the results of a group.
  
 
 ### Who are we?
