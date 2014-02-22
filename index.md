@@ -4,7 +4,7 @@ title: The Collaboratool Project
 ---
 ### Welcome to the Collaboratool Project
 
-Collaboratool is an umbrella project for the creation of reproducible, reliable scientific computing environments. What problems does this do for you?
+Collaboratool is an umbrella project for the creation of reproducible, reliable scientific computing environments. What problems does this solve for you?
 
 
  - No more obscure installation issues - download and run a single virtual
