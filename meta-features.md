@@ -1,3 +1,7 @@
+---
+layout: default
+title: Meta-Features
+---
 ### Desired high-level features of BCE
 
 This working document is intended as a way for the BCE working group to agree on the desired features of BCE.
