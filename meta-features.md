@@ -12,11 +12,11 @@ Tentative list of features:
 
   - The VM runnable on user laptops (Mac/Windows/Linux) and on cloud machines
 
-  - The VM usable on a machine with minimal dependencies (e.g., either VirtualBox or VMware) and minimal setup, and with clear instructions for users on setup and on getting data/files into and out of the VM
+  - The VM usable on user machines with minimal dependencies (e.g., either VirtualBox or VMware) and minimal setup, and with clear instructions for users on setup and on getting data/files into and out of the VM
 
  * Scripting:
 
-  - The script used to create a given VM available to users and with clear instructions on how to use and modify the script
+  - The script used to create a given VM available to users and with clear instructions on how to use and modify the script; ideally the form of the script will be relatively simple for users to understand
 
   - The ability for a user to add software to a VM and then 'export' that information back into a script that can be used to recreate the modified VM
 
