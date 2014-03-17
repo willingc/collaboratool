@@ -10,7 +10,7 @@ Tentative list of features:
 
  * VMs:
 
-   - A fixed, versioned VM provided each semester for classes and workshops
+   - A fixed, versioned VM provided each semester as a binary image for classes and workshops
 
    -  Ideally, the same VM usable for research, with functionality for parallel computing and provisioned such that it can be used as the VM for virtual cluster nodes
 
