@@ -18,6 +18,8 @@ Tentative list of features:
 
    - The VM usable on user machines with minimal dependencies (e.g., either VirtualBox or VMware) and minimal setup, and with clear instructions for users on setup and on getting data/files into and out of the VM
 
+   - Agreement on minimal hardware requirements on the host machine - do we support 32 bit, any minimum RAM required?
+
  * Scripting:
 
    - The script used to create a given VM available to users and with clear instructions on how to use and modify the script; ideally the form of the script will be relatively simple for users to understand
