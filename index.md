@@ -26,7 +26,13 @@ on their laptop, on a university server, or in the cloud. Furthermore, users
 will be able to modify the instructions for producing the virtual machine in a
 reproducible way for communication with and distribution to others.
 
-More specifically, we envision that BCE will encompass the following:
+We envision the following core use cases:
+
+  * creating a common computing environment for a course or workshop,
+  * creating a common computational environment to be shared by a group of researchers or students, and
+  * disseminating the computational environment so outsiders can reproduce the results of a group.
+ 
+To accomplish this, we envision that BCE will encompass the following:
 
  * a "script" (i.e., a reproducible workflow) that creates the standard VM/image
    with standard scientific computing software such as Python, R, git, etc.,
@@ -37,12 +43,6 @@ More specifically, we envision that BCE will encompass the following:
    computational needs, class vs. research use, etc.). This script might
    represent either a sequence or a tree of possible VMs.
 
-These tools will enable the following core use cases:
- 
-  * creating a common computing environment for a course or workshop,
-  * creating a common computational environment to be shared by a group of researchers or students, and
-  * disseminating the computational environment so outsiders can reproduce the results of a group.
- 
 
 ### Who are we?
 
