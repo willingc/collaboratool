@@ -24,7 +24,7 @@ Tentative list of features:
 
    - The provisioning details used to create a given VM available to users and with clear instructions on how to use and modify the provisioning; ideally the provisioning would be relatively simple for users to understand
 
-   - The ability for a user to add software to a VM and then 'export' that information back into the provisioning documentation that can be used to recreate the modified VM
+   - The ability for a user to add software to a VM and then 'export' that information back into the provisioning workflow that can be used to recreate the modified VM
 
  * Logistics and training
  
