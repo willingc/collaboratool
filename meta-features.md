@@ -20,17 +20,18 @@ Tentative list of features:
 
    - Agreement on minimal hardware requirements on the host machine - do we support 32 bit, any minimum RAM required?
 
- * Scripting:
+ * Provisioning:
 
-   - The script used to create a given VM available to users and with clear instructions on how to use and modify the script; ideally the form of the script will be relatively simple for users to understand
+   - The provisioning details used to create a given VM available to users and with clear instructions on how to use and modify the provisioning; ideally the provisioning would be relatively simple for users to understand
 
-   - The ability for a user to add software to a VM and then 'export' that information back into a script that can be used to recreate the modified VM
+   - The ability for a user to add software to a VM and then 'export' that information back into the provisioning documentation that can be used to recreate the modified VM
 
  * Logistics and training
  
-   - A repository/website with all BCE materials available
+   - A GitHub repository or the like plus a project website with all BCE materials available
 
-   - Procedures for user input and feedback on bugs, desired software tools on the VM, etc., e.g., via a mailing list
+   - Communication with users on bugs, desired features, and the like via the repository and a mailing list
+
 
 
 
