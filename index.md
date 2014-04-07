@@ -34,13 +34,13 @@ We envision the following core use cases:
  
 To accomplish this, we envision that BCE will encompass the following:
 
- * a "script" (i.e., a reproducible workflow) that creates the standard VM/image
+ * a reproducible workflow that creates the standard VM/image
    with standard scientific computing software such as Python, R, git, etc.,
- * a standard binary image, produced by the script, that can be distributed as is and
+ * a standard binary image, produced by the workflow, that can be distributed as is and
    used on-the-fly with VirtualBox or VMWare Player with minimal dependencies, and
- * (possibly) an advanced "script" that represents multiple possible distributions tailored
+ * (possibly) an augmented workflow that represents multiple possible distributions tailored
    for different types of uses (e.g., different disciplines, different
-   computational needs, class vs. research use, etc.). This script might
+   computational needs, class vs. research use, etc.). This might
    represent either a sequence or a tree of possible VMs.
 
 
