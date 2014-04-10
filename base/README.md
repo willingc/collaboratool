@@ -22,6 +22,7 @@ vanilla install (including an OpenSSH server), we do the following. It's
 something we only need to do once to get to the base image, and is pretty few
 steps:
 
+    # Probably just need core xserver, guest extensions install their own driver
     apt-get install dkms xserver-xorg
     # Maybe do all updates?
     # Manually mount the Guest Extensions, "insert" using the VBox GUI
@@ -71,7 +72,12 @@ Dav and Ryan identified the following specifications for the summer VM:
 		+ (not discussed yet) Ryan prefers to change the panel's Application menu icon to a generic computer icon from XFCE's logo.
 
 Undecided
-	- Ryan prefers to hide the grub menu and Linux kernel boot messages. This doesn't fit in with the "glass brick" model where we don't hide the plumbing.
+    - Ryan prefers to hide the grub menu and Linux kernel boot messages. This
+      doesn't fit in with the "glass brick" model where we don't hide the
+      plumbing.
+    - Dav would like to have some git GUI. Thunar and gedit both have git
+      integration but Thunar is pretty weak, gitg seems to be the standard gtk
+      version (thus suitable for unity, LXDE, XFCE...)
 
 Future Tasks
 	- Investigate box file format to reduce size
