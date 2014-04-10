@@ -8,7 +8,7 @@ Sadly, while some of the materials copied here were authored by
 of magnitude reduction in repository size is worth it!
 
 Another source of materials while we're settling is in
-[collaboratool-base](https://github.com/dlab-berkeley/collaboratool-archive),
+[collaboratool-base](https://github.com/dlab-berkeley/collaboratool-base),
 which represents @davclark's first stab at a minimal provisioning approach. We
 should likely copy some of that over as well.
 
