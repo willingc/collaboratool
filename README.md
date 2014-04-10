@@ -1,6 +1,17 @@
 Collaboratool
 =============
 
+Note - this master branch is a reboot of the repo now in
+[collaboratool-archive](https://github.com/dlab-berkeley/collaboratool-archive).
+Sadly, while some of the materials copied here were authored by
+@MostlyBagOfWater, that history is lost. But, I hope you find that the 2 degrees
+of magnitude reduction in repository size is worth it!
+
+Another source of materials while we're settling is in
+[collaboratool-base](https://github.com/dlab-berkeley/collaboratool-archive),
+which represents @davclark's first stab at a minimal provisioning approach. We
+should likely copy some of that over as well.
+
 "Collaboratool" is a project for building, integrating, and deploying tools that
 support portable, reproducible data science. It is currently a collaboration
 between folks at UC Berkeley in the [D-Lab](http://dlab.berkeley.edu),
