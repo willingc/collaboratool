@@ -46,16 +46,24 @@ echo DONE || echo FAIL
 
 # Packages
 # rabbitvcs pulls in Ubuntu ipython which we displace later with pip
-echo "BCE: Installing selective packages..."
-apt-get -y install git sqlite3 pandoc emacs xemacs21 default-jre default-jdk \
+echo "BCE: Installing basic system packages..."
+apt-get -y install git \
+	firefox xpdf evince gv emacs xemacs21 vim-gtk \
+	lightdm xrdp xfce4{,-terminal} xubuntu-default-settings && \
+echo DONE || echo FAIL
+
+echo "BCE: Installing authoring packages..."
+apt-get -y install libreoffice pandoc \
+	texlive{,-latex-{base,extra},-fonts-{extra,recommended},-pictures} && \
+echo DONE || echo FAIL
+
+echo "BCE: Installing basic development packages..."
+apt-get -y install sqlite3  default-jre default-jdk \
 	r-recommended libjpeg62 fonts-mathjax python-software-properties \
 	python-dev python-pip python-setuptools python-pip python-gtk2-dev \
-	texlive{,-latex-{base,extra},-fonts-{extra,recommended},-pictures} \
 	gedit{,{,-developer}-plugins,-{r,latex,source-code-browser}-plugin} \
 	rabbitvcs-gedit thunar-vcs-plugin \
-	firefox xpdf evince gv libreoffice \
-	libyaml-dev libzmq3-dev libssl-dev libxslt1-dev liblzma-dev \
-	lightdm xrdp xfce4{,-terminal} xubuntu-default-settings && \
+	libyaml-dev libzmq3-dev libssl-dev libxslt1-dev liblzma-dev && \
 echo DONE || echo FAIL
 
 # Google Chrome
