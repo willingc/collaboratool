@@ -1,0 +1,65 @@
+{
+  "builders": [
+    {
+    "vm_name": "BCE-xubuntu-14.04-amd64",
+    "output_directory": "packer-ubuntu-14.04-amd64-virtualbox",
+    "type": "virtualbox-iso",
+    "format": "ova",
+    "boot_command": [
+      "<esc><wait>",
+      "<esc><wait>",
+      "<enter><wait>",
+      "/install/vmlinuz",
+      " auto<wait>",
+      " console-setup/ask_detect=false",
+      " console-setup/layoutcode=us",
+      " console-setup/modelcode=pc105<wait>",
+      " debconf/frontend=noninteractive",
+      " debian-installer=en_US",
+      " fb=false",
+      " initrd=/install/initrd.gz<wait>",
+      " kbd-chooser/method=us",
+      " keyboard-configuration/layout=USA",
+      " keyboard-configuration/variant=USA",
+      " locale=en_US<wait>",
+      " netcfg/get_domain=vm",
+      " netcfg/get_hostname=BCE<wait>",
+      " noapic<wait>",
+      " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ubuntu-14.04/preseed.cfg",
+      " -- <wait>",
+      "<enter><wait>"
+    ],
+    "http_directory": "http",
+    "guest_additions_mode": "attach",
+    "vboxmanage": [
+      [
+        "modifyvm",
+        "{{.Name}}",
+        "--memory",
+        "1024"
+      ],
+      [
+        "modifyvm",
+        "{{.Name}}",
+        "--cpus",
+        "1"
+      ]
+    ],
+    "guest_os_type": "Ubuntu_64",
+    "iso_checksum": "4d94f6111b8fe47da94396180ce499d8c0bb44f3",
+    "iso_checksum_type": "sha1",
+    "iso_url": "http://releases.ubuntu.com/14.04/ubuntu-14.04-server-amd64.iso",
+    "ssh_username": "oski",
+    "ssh_password": "oski",
+    "ssh_wait_timeout": "600s",
+    "shutdown_command": "echo 'oski' | sudo -S shutdown -P now"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "script": "bootstrap-bce.sh",
+      "environment-vars": "BCE_PROVISION=DLAB"
+    }
+  ]
+}
