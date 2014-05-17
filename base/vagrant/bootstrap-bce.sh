@@ -49,8 +49,8 @@ echo DONE || echo FAIL
 # location within the Shared Folders configuration.
 
 # Note that there's also a `vboxmanage guestcontrol updateadditions` command
-# And, I'm actually attaching the Guest additions iso via Packer (but not yet
-# mounting it)
+# And, I'm now attaching the Guest additions iso via Packer (but not yet
+# mounting it). But it's a way to move in a slightly more efficient direction.
 
 msg="BCE: Installing Guest Additions..."
 echo "$msg"
@@ -104,8 +104,6 @@ echo "$msg"
 apt-get -y install ${DEBS} && \
 ( echo DONE ; etckeeper commit "$msg" ) || echo FAIL
 
-
-
 # Google Chrome
 msg="BCE: Installing google chrome..."
 echo "$msg"
@@ -117,11 +115,16 @@ apt-get update > /dev/null && \
 apt-get -y install google-chrome-stable && \
 ( echo DONE ; etckeeper commit "$msg" ) || echo FAIL
 
-# TODO - this is broken in D-Lab style
 # R, RStudio
 msg="BCE: Installing RStudio..."
 echo "$msg"
-RSTUDIO_URL=`python /vagrant/getrstudio` && \
+# XXX - Using Packer, we could just put extra scripts in Packer's json config
+# But this needs to be refactored
+if [ "${BCE_PROVISION}" != "DLAB" ]; then
+    RSTUDIO_URL=`python /vagrant/getrstudio`
+else
+    RSTUDIO_URL=`python /tmp/getrstudio`
+fi && \ # XXX not sure if this is legit bash
 curl -L -O ${RSTUDIO_URL} && \
 dpkg -i $(basename ${RSTUDIO_URL}) && \
 ( echo DONE ; etckeeper commit "$msg" ) || echo FAIL
@@ -137,7 +140,6 @@ done && \
 
 # TODO This currently errors out with
 # update-alternatives: error: no alternatives for x-session-manager
-# Configure desktop
 msg="BCE: Setting Xfce4 as default X session"
 echo "$msg"
 update-alternatives --set x-session-manager /usr/bin/xfce4-session && \
@@ -175,6 +177,7 @@ echo "$msg"
   # Enable oski to mount shared folders
   adduser oski vboxsf
   # Enable oski to login without a password
+  # XXX - there's probably a way to do this in the debian installer
   adduser oski nopasswdlogin
 ) && \
 ( echo DONE ; etckeeper commit "$msg" ) || echo FAIL
@@ -194,16 +197,17 @@ echo "$msg"
     #   whatever it is that XFCE uses.
     # - Benoit prefers black-on-white terminal; easier to see on projectors
 
+    # ~/.config already exists if oski is created by debian installer
+    # Packer file provisioner copies those files directly to .config
     if [ "${BCE_PROVISION}" != "DLAB" ]; then
         sudo -u oski mkdir /home/oski/Desktop /home/oski/.config
         sudo -u oski rsync -av /vagrant/xfce4 /home/oski/.config/
-    else
-        mv /tmp/xfce4 /home/oski/.config
     fi
 ) && \
 echo DONE || echo FAIL
 
 # Automatically login oski at boot
+# XXX - Again, this is likely possible via debian installer
 msg="BCE: Automatically login oski at boot"
 echo "$msg"
 printf "[SeatDefaults]\nautologin-user=oski\nautologin-user-timeout=0\n" >> \
