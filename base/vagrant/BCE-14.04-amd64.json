@@ -2,6 +2,7 @@
   "builders": [
     {
     "vm_name": "BCE-xubuntu-14.04-amd64",
+    "disk_size": 8000,
     "output_directory": "packer-ubuntu-14.04-amd64-virtualbox",
     "type": "virtualbox-iso",
     "format": "ova",
@@ -23,10 +24,10 @@
       " keyboard-configuration/variant=USA",
       " locale=en_US<wait>",
       " netcfg/get_domain=vm",
-      " netcfg/get_hostname=BCE<wait>",
+      " netcfg/get_hostname=BCE",
       " noapic<wait>",
       " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ubuntu-14.04/preseed.cfg",
-      " -- <wait>",
+      " --",
       "<enter><wait>"
     ],
     "http_directory": "http",
@@ -51,15 +52,21 @@
     "iso_url": "http://releases.ubuntu.com/14.04/ubuntu-14.04-server-amd64.iso",
     "ssh_username": "oski",
     "ssh_password": "oski",
-    "ssh_wait_timeout": "600s",
+    "ssh_wait_timeout": "3000s",
     "shutdown_command": "echo 'oski' | sudo -S shutdown -P now"
     }
   ],
   "provisioners": [
     {
+      "type": "file",
+      "source": "xfce4",
+      "destination": "/home/oski/.config"
+    },
+    {
       "type": "shell",
       "script": "bootstrap-bce.sh",
-      "environment-vars": "BCE_PROVISION=DLAB"
+      "environment_vars": "BCE_PROVISION=DLAB",
+      "execute_command": "echo 'oski' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'"
     }
   ]
 }
