@@ -161,23 +161,23 @@ echo "$msg"
 sed -i -e '/# set tabsize 8/s/.*/set tabsize 4/' /etc/nanorc && \
 ( echo DONE ; etckeeper commit "$msg" ) || echo FAIL
 
-if [ "${BCE_PROVISION}" != "DLAB" ]; then
-  msg="BCE: Create oski user"
-  echo "$msg"
-  (
-    # XXX Get explanation from Ryan
-    adduser --gecos "" --disabled-password oski && echo oski:oski | chpasswd 
-    # Enable oski to sudo without a password
-    adduser oski sudo
-    # TODO - need to create this group in Packer setup, and then do the steps
-    # below
-    # Enable oski to mount shared folders
-    adduser oski vboxsf
-    # Enable oski to login without a password
-    adduser oski nopasswdlogin
-  ) && \
-  ( echo DONE ; etckeeper commit "$msg" ) || echo FAIL
-fi
+msg="BCE: Create oski user"
+echo "$msg"
+(
+  if [ "${BCE_PROVISION}" != "DLAB" ]; then
+      # XXX Get explanation from Ryan
+      adduser --gecos "" --disabled-password oski && echo oski:oski | chpasswd
+      # Enable oski to sudo without a password
+      adduser oski sudo
+  fi
+  # TODO - need to create this group in Packer setup, and then do the steps
+  # below, I think maybe just didn't happen because of guest extension failure
+  # Enable oski to mount shared folders
+  adduser oski vboxsf
+  # Enable oski to login without a password
+  adduser oski nopasswdlogin
+) && \
+( echo DONE ; etckeeper commit "$msg" ) || echo FAIL
 
 msg="BCE: Configure oski desktop"
 echo "$msg"
