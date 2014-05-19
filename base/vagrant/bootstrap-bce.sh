@@ -30,17 +30,30 @@ START_TIME=$(date '+%s')
 DEBS="${DEBS} curl sqlite3 pandoc r-recommended libjpeg62 fonts-mathjax python-software-properties python-dev python-pip python-setuptools python-pip python-gtk2-dev texlive texlive-latex-base texlive-latex-extra texlive-fonts-extra texlive-fonts-recommended texlive-pictures gedit gedit-plugins gedit-developer-plugins gedit-r-plugin gedit-latex-plugin gedit-source-code-browser-plugin rabbitvcs-gedit thunar-vcs-plugin firefox xpdf evince gv libreoffice libyaml-dev libzmq3-dev libssl-dev libxslt1-dev liblzma-dev lightdm xrdp xfce4 xfce4-terminal xubuntu-default-settings"
 PIPS="${PIPS} pandas matplotlib scipy rpy2 ipython==1.2.1 sphinx scrapy distribute virtualenv apiclient BeautifulSoup boilerpipe bson cluster envoy feedparser flask geopy networkx oauth2 prettytable pygithub pymongo readline requests twitter twitter-text-py uritemplate google-api-python-client jinja facebook nltk ez_setup ipythonblocks scikits.learn sklearn-pandas patsy seaborn pyzmq markdown git+git://github.com/getpelican/pelican.git@011cd50e2e7 ghp-import"
 
-echo "BCE: Updating apt cache..."
+# XXX - apt in general is probably too verbose for our useage - it's hard to
+# detect where actual failures may have occurred. Maybe we can reduce verbosity?
+msg="BCE: Updating apt cache..."
+echo $msg
 apt-get update > /dev/null && \
-echo DONE || echo FAIL
+echo DONE: $msg || echo FAIL: $msg
+
+msg="BCE: configure etckeeper with git..."
+echo $msg
+# Track system changes
+apt-get -y install git etckeeper && \
+sed -i -e '/^VCS/s/^/#/' -e '/="git"/s/^#//' /etc/etckeeper/etckeeper.conf && \
+cd /etc && \
+git config --global user.name "BCE provisioner" && \
+git config --global user.email "bce@lists.berkeley.edu" && \
+etckeeper init && \
+echo DONE: $msg || echo FAIL: $msg
 
 echo "BCE: Installing build utilities..."
 # This is more robust - redundancy is not a problem!
-apt-get -y install build-essential dkms xserver-xorg dmidecode curl && \
+apt-get -y install build-essential dkms xserver-xorg dmidecode curl software-properties-common && \
 # apt-get -y install xserver-xorg && \
-echo DONE || echo FAIL
+echo DONE: $msg || echo FAIL: $msg
 
-# if [ "${BCE_PROVISION}" != "DLAB" ]; then
 # Automate VBox guest additions by downloading the ISO from virtualbox.org.
 # An alternative method would be to manually share the directory on the host
 # which actually contains VBoxGuestAdditions.iso. On a Mac that is
@@ -48,13 +61,15 @@ echo DONE || echo FAIL
 # home directory however, there's no convenient variable representing this
 # location within the Shared Folders configuration.
 
-# Note that there's also a `vboxmanage guestcontrol updateadditions` command
-# And, I'm now attaching the Guest additions iso via Packer (but not yet
-# mounting it). But it's a way to move in a slightly more efficient direction.
 
 msg="BCE: Installing Guest Additions..."
 echo "$msg"
 (
+    # if [ "${BCE_PROVISION}" != "DLAB" ]; then
+    # Note that there's also a `vboxmanage guestcontrol updateadditions` command
+    # And, I'm now attaching the Guest additions iso via Packer (but not yet
+    # mounting it). But it's a way to move in a slightly more efficient direction.
+    # fi
     V=$(dmidecode | grep vboxVer | sed -e 's/.*_//')
     if [ -z "${V}" ]; then
         V=$(modinfo vboxguest | grep ^version | sed -e 's/.* //' -e 's/_.*//')
@@ -68,17 +83,10 @@ echo "$msg"
     umount /mnt && rm /tmp/${ISO} && \
     true
 ) && \
-( echo DONE ; etckeeper commit "$msg" ) || echo FAIL
-# fi
+( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
+# XXX - for some reason, while this appears to succeed, I get a FAIL message - I
+# guess because etckeeper wasn't installed?
 
-# Track system changes
-apt-get -y install git etckeeper && \
-sed -i -e '/^VCS/s/^/#/' -e '/="git"/s/^#//' /etc/etckeeper/etckeeper.conf && \
-cd /etc && \
-git config --global user.name "BCE provisioner" && \
-git config --global user.email "bce@lists.berkeley.edu" && \
-etckeeper init && \
-echo DONE || echo FAIL
 
 # CRAN repo
 # There is no 14.04 CRAN archive yet so it is commented out
@@ -91,18 +99,24 @@ echo "$msg"
 # XXX This is redundant with c2d4u, right?
 # apt-add-repository -y ppa:marutter/rrutter && \
 apt-add-repository -y ppa:marutter/c2d4u && \
-( echo DONE ; etckeeper commit "$msg" ) || echo FAIL
+( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
 
 msg="BCE: Updating OS..."
 echo "$msg"
 apt-get update && \
 DEBIAN_PRIORITY=high DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade && \
-( echo DONE ; etckeeper commit "$msg" ) || echo FAIL
+echo DONE: $msg  || echo FAIL: $msg
+# XXX - the above fails because there were no changes to /etc
+# Note that I think there are hooks where apt upgrades will be committed
+# automatically with etckeeper. So, we should probably just not include the
+# etckeeper step for pure apt steps
 
-msg="BCE: Installing selective packages..."
+msg="BCE: Installing scientific packages..."
 echo "$msg"
 apt-get -y install ${DEBS} && \
-( echo DONE ; etckeeper commit "$msg" ) || echo FAIL
+apt-get clean && \ # I guess we need this to avoid running out of memory
+echo DONE: $msg  || echo FAIL: $msg
+# XXX - also FAILs because of no changes to etc.
 
 # Google Chrome
 msg="BCE: Installing google chrome..."
@@ -113,7 +127,14 @@ curl -L https://dl-ssl.google.com/linux/linux_signing_key.pub | \
 	apt-key add - && \
 apt-get update > /dev/null && \
 apt-get -y install google-chrome-stable && \
-( echo DONE ; etckeeper commit "$msg" ) || echo FAIL
+echo DONE: $msg  || echo FAIL: $msg
+# XXX - this failed with a "cannot copy extracted data for
+# './opt/google/chrome/resources.pak' to
+# '/opt/google/chrome/resources.pak.dpkg-new': failed to write (No space left on
+# device)"
+# Subsequent manual installation succeeded. But maybe we should just use
+# Chromium? Did we get a request to do otherwise? Personally, I'd prefer to just
+# stick with the default Firefox.
 
 # R, RStudio
 msg="BCE: Installing RStudio..."
@@ -127,8 +148,17 @@ else
 fi && \ # XXX not sure if this is legit bash
 curl -L -O ${RSTUDIO_URL} && \
 dpkg -i $(basename ${RSTUDIO_URL}) && \
-( echo DONE ; etckeeper commit "$msg" ) || echo FAIL
+( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
+# XXX - also ran out of space - hopefully apt-get clean above addresses this
+# Note that dpkg does NOT run etckeeper, so we run it by hand (though it still
+# might fail!)
 
+# XXX - Output here is also currently very verbose, maybe we should make pip
+# more quiet?  More importantly, we should probably use the requirements file
+# approach, and include version numbers
+# XXX - Currently boilerpipe complains about lack of Java - we should probably
+# install java (and perhaps scala - though that seems less necessary for JVM
+# language)
 msg="BCE: Installing Python modules..."
 echo "$msg"
 for p in ${PIPS} ; do \
@@ -136,14 +166,15 @@ for p in ${PIPS} ; do \
 	pip install --upgrade "${p}" 2>/tmp/pip-err-${p}.log | \
 		tee /tmp/pip-out-${p}.log
 done && \
-( echo DONE ; etckeeper commit "$msg" ) || echo FAIL
+echo DONE: $msg || echo FAIL: $msg
+# XXX - pip won't change /etc
 
-# TODO This currently errors out with
+# XXX This currently errors out with
 # update-alternatives: error: no alternatives for x-session-manager
 msg="BCE: Setting Xfce4 as default X session"
 echo "$msg"
 update-alternatives --set x-session-manager /usr/bin/xfce4-session && \
-( echo DONE ; etckeeper commit "$msg" ) || echo FAIL
+( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
 
 msg="BCE: Hide boot messages"
 echo "$msg"
@@ -151,17 +182,17 @@ sed -i \
 	-e '/GRUB_HIDDEN_TIMEOUT=/s/^#//' \
 	-e '/^GRUB_CMDLINE_LINUX_DEFAULT=""/s/""/"quiet splash"/' \
 	/etc/default/grub && \
-( echo DONE ; etckeeper commit "$msg" ) || echo FAIL
+( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
 
 msg="BCE: Disable sudo password for those in the sudo group"
 echo "$msg"
 printf "%%sudo\tALL=(ALL:ALL) NOPASSWD: ALL\n" > /etc/sudoers.d/nopasswd && \
-( echo DONE ; etckeeper commit "$msg" ) || echo FAIL
+( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
 
 msg="BCE: Set a 4-space tabstop for nano"
 echo "$msg"
 sed -i -e '/# set tabsize 8/s/.*/set tabsize 4/' /etc/nanorc && \
-( echo DONE ; etckeeper commit "$msg" ) || echo FAIL
+( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
 
 msg="BCE: Create oski user"
 echo "$msg"
@@ -172,15 +203,14 @@ echo "$msg"
       # Enable oski to sudo without a password
       adduser oski sudo
   fi
-  # TODO - need to create this group in Packer setup, and then do the steps
-  # below, I think maybe just didn't happen because of guest extension failure
+  # XXX - need to create this group in Packer setup, and then do the steps
+  # below? I think maybe just didn't happen because of guest extension failure
   # Enable oski to mount shared folders
   adduser oski vboxsf
   # Enable oski to login without a password
-  # XXX - there's probably a way to do this in the debian installer
   adduser oski nopasswdlogin
 ) && \
-( echo DONE ; etckeeper commit "$msg" ) || echo FAIL
+( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
 
 msg="BCE: Configure oski desktop"
 echo "$msg"
@@ -198,22 +228,22 @@ echo "$msg"
     # - Benoit prefers black-on-white terminal; easier to see on projectors
 
     # ~/.config already exists if oski is created by debian installer
+    # And we use a file provisioner to copy our xfce4 files directly there
     # Packer file provisioner copies those files directly to .config
     if [ "${BCE_PROVISION}" != "DLAB" ]; then
         sudo -u oski mkdir /home/oski/Desktop /home/oski/.config
         sudo -u oski rsync -av /vagrant/xfce4 /home/oski/.config/
     fi
 ) && \
-echo DONE || echo FAIL
+echo DONE: $msg || echo FAIL: $msg
 
 # Automatically login oski at boot
-# XXX - Again, this is likely possible via debian installer
 msg="BCE: Automatically login oski at boot"
 echo "$msg"
 printf "[SeatDefaults]\nautologin-user=oski\nautologin-user-timeout=0\n" >> \
 	/etc/lightdm/lightdm.conf.d/20-BCE.conf && \
 	#/usr/lib/lightdm/lightdm-set-defaults --autologin oski
-( echo DONE ; etckeeper commit "$msg" ) || echo FAIL
+( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
 
 # Clean up the image before we export it
 apt-get clean
