@@ -68,7 +68,7 @@
       "type": "shell",
       "script": "bootstrap-bce.sh",
       "environment_vars": "BCE_PROVISION=DLAB",
-      "execute_command": "echo 'oski' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'"
+      "execute_command": "echo 'oski' | {{ .Vars }} sudo -E -S bash '{{ .Path }}'"
     }
   ]
 }

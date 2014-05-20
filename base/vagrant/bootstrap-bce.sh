@@ -70,7 +70,9 @@ msg="BCE: Installing Guest Additions..."
 echo "$msg"
 (
     if [ "${BCE_PROVISION}" == "DLAB" ]; then
-        mount /dev/cdrom /mnt && \
+        # The guest extensions end up as a second CD/DVD drive
+        # /dev/cdrom / /dev/sr0 is the Ubuntu ISO
+        mount /dev/sr1 /mnt && \
         /mnt/VBoxLinuxAdditions.run -- --force && \
         umount /mnt
     else
