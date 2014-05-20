@@ -13,7 +13,7 @@ START_TIME=$(date '+%s')
 # rpy2 < liblzma-dev
 # pyyaml < libyaml-dev
 # pandas > dateutil pytz numpy
-# ipython > tornado pyparsing nose backports.ssl-match-hostname 
+# ipython > tornado pyparsing nose backports.ssl-match-hostname
 # sphinx > Pygments docutils Jinja2 markupsafe
 # scrapy > Twisted w3lib queuelib cssselect
 # scrapy < libxslt1-dev libssl-dev
@@ -28,7 +28,9 @@ START_TIME=$(date '+%s')
 # https://bitbucket.org/bioinformed/rpy2/commits/c1c9ddf2910cfb68fe56ee4891ed6785a0b8352b
 
 DEBS="${DEBS} curl sqlite3 pandoc r-recommended libjpeg62 fonts-mathjax python-software-properties python-dev python-pip python-setuptools python-pip python-gtk2-dev texlive texlive-latex-base texlive-latex-extra texlive-fonts-extra texlive-fonts-recommended texlive-pictures gedit gedit-plugins gedit-developer-plugins gedit-r-plugin gedit-latex-plugin gedit-source-code-browser-plugin rabbitvcs-gedit thunar-vcs-plugin firefox xpdf evince gv libreoffice libyaml-dev libzmq3-dev libssl-dev libxslt1-dev liblzma-dev lightdm xrdp xfce4 xfce4-terminal xubuntu-default-settings"
-PIPS="${PIPS} pandas matplotlib scipy rpy2 ipython==1.2.1 sphinx scrapy distribute virtualenv apiclient BeautifulSoup boilerpipe bson cluster envoy feedparser flask geopy networkx oauth2 prettytable pygithub pymongo readline requests twitter twitter-text-py uritemplate google-api-python-client jinja facebook nltk ez_setup ipythonblocks scikits.learn sklearn-pandas patsy seaborn pyzmq markdown git+git://github.com/getpelican/pelican.git@011cd50e2e7 ghp-import"
+# I've reverted to latest IPython here. It's good stuff, and introduces a
+# UI change, so I'd rather users have that
+PIPS="${PIPS} pandas matplotlib scipy rpy2 ipython sphinx scrapy distribute virtualenv apiclient BeautifulSoup boilerpipe bson cluster envoy feedparser flask geopy networkx oauth2 prettytable pygithub pymongo readline requests twitter twitter-text-py uritemplate google-api-python-client jinja facebook nltk ez_setup ipythonblocks scikits.learn sklearn-pandas patsy seaborn pyzmq markdown git+git://github.com/getpelican/pelican.git@011cd50e2e7 ghp-import"
 
 # XXX - apt in general is probably too verbose for our useage - it's hard to
 # detect where actual failures may have occurred. Maybe we can reduce verbosity?
@@ -128,6 +130,8 @@ apt-get -y install google-chrome-stable && \
 echo DONE: $msg  || echo FAIL: $msg
 # XXX - maybe we should just use Chromium? Did we get a request to do otherwise?
 # Personally, I'd prefer to just stick with the default Firefox.
+# Also - if you haven't run Chrome yet, ipython notebook won't give the
+# option
 
 # R, RStudio
 msg="BCE: Installing RStudio..."
