@@ -81,12 +81,10 @@ echo "$msg"
     mount -o loop,ro /tmp/${ISO} /mnt && \
     /mnt/VBoxLinuxAdditions.run -- --force && \
     umount /mnt && rm /tmp/${ISO} && \
-    true
+    true # XXX - does this do anything?
 ) && \
 ( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
-# XXX - for some reason, while this appears to succeed, I get a FAIL message - I
-# guess because etckeeper wasn't installed?
-
+# XXX - for some reason, while this appears to succeed, I get a FAIL message
 
 # CRAN repo
 # There is no 14.04 CRAN archive yet so it is commented out
@@ -106,17 +104,17 @@ echo "$msg"
 apt-get update && \
 DEBIAN_PRIORITY=high DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade && \
 echo DONE: $msg  || echo FAIL: $msg
-# XXX - the above fails because there were no changes to /etc
-# Note that I think there are hooks where apt upgrades will be committed
-# automatically with etckeeper. So, we should probably just not include the
-# etckeeper step for pure apt steps
+# etckeeper above fails because there were no changes to /etc
+# There are hooks where apt upgrades will be committed automatically with
+# etckeeper. So, we should probably just not include the etckeeper step for pure
+# apt steps
 
 msg="BCE: Installing scientific packages..."
 echo "$msg"
 apt-get -y install ${DEBS} && \
 apt-get clean && \ # I guess we need this to avoid running out of memory
 echo DONE: $msg  || echo FAIL: $msg
-# XXX - also FAILs because of no changes to etc.
+# etckeeper also FAILs because of no changes to etc.
 
 # Google Chrome
 msg="BCE: Installing google chrome..."
@@ -128,30 +126,23 @@ curl -L https://dl-ssl.google.com/linux/linux_signing_key.pub | \
 apt-get update > /dev/null && \
 apt-get -y install google-chrome-stable && \
 echo DONE: $msg  || echo FAIL: $msg
-# XXX - this failed with a "cannot copy extracted data for
-# './opt/google/chrome/resources.pak' to
-# '/opt/google/chrome/resources.pak.dpkg-new': failed to write (No space left on
-# device)"
-# Subsequent manual installation succeeded. But maybe we should just use
-# Chromium? Did we get a request to do otherwise? Personally, I'd prefer to just
-# stick with the default Firefox.
+# XXX - maybe we should just use Chromium? Did we get a request to do otherwise?
+# Personally, I'd prefer to just stick with the default Firefox.
 
 # R, RStudio
 msg="BCE: Installing RStudio..."
 echo "$msg"
 # XXX - Using Packer, we could just put extra scripts in Packer's json config
 # But this needs to be refactored
+# XXX - Also, couldn't we just hard-code a URL?
 if [ "${BCE_PROVISION}" != "DLAB" ]; then
     RSTUDIO_URL=`python /vagrant/getrstudio`
 else
     RSTUDIO_URL=`python /tmp/getrstudio`
-fi && \ # XXX not sure if this is legit bash
+fi && \
 curl -L -O ${RSTUDIO_URL} && \
 dpkg -i $(basename ${RSTUDIO_URL}) && \
 ( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
-# XXX - also ran out of space - hopefully apt-get clean above addresses this
-# Note that dpkg does NOT run etckeeper, so we run it by hand (though it still
-# might fail!)
 
 # XXX - Output here is also currently very verbose, maybe we should make pip
 # more quiet?  More importantly, we should probably use the requirements file
@@ -207,8 +198,9 @@ echo "$msg"
   # below? I think maybe just didn't happen because of guest extension failure
   # Enable oski to mount shared folders
   adduser oski vboxsf
+  # XXX - This group doesn't exist
   # Enable oski to login without a password
-  adduser oski nopasswdlogin
+  # adduser oski nopasswdlogin
 ) && \
 ( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
 
@@ -217,6 +209,7 @@ echo "$msg"
 (
     # Create a convenient place on the desktop for people to mount
     # their Shared Directories.
+    sudo -u oski mkdir -p /home/oski/Desktop
     sudo -u oski ln -s /media /home/oski/Desktop/Shared
 
     # Fetch and install Xfce configuration
@@ -231,8 +224,8 @@ echo "$msg"
     # And we use a file provisioner to copy our xfce4 files directly there
     # Packer file provisioner copies those files directly to .config
     if [ "${BCE_PROVISION}" != "DLAB" ]; then
-        sudo -u oski mkdir /home/oski/Desktop /home/oski/.config
-        sudo -u oski rsync -av /vagrant/xfce4 /home/oski/.config/
+        sudo -u oski mkdir /home/oski/.config
+        sudo -u oski rsync -av /vagrant/dot-config/xfce4 /home/oski/.config/
     fi
 ) && \
 echo DONE: $msg || echo FAIL: $msg
