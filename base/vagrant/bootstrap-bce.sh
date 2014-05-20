@@ -60,15 +60,14 @@ echo DONE: $msg || echo FAIL: $msg
 # /Applications/VirtualBox.app/Contents/MacOS/. Just like with the host user's
 # home directory however, there's no convenient variable representing this
 # location within the Shared Folders configuration.
-
+# Note that there's also a `vboxmanage guestcontrol updateadditions` command
+# And, I'm now attaching the Guest additions iso via Packer (but not yet
+# mounting it). But it's a way to move in a slightly more efficient direction.
 
 msg="BCE: Installing Guest Additions..."
 echo "$msg"
 (
     # if [ "${BCE_PROVISION}" != "DLAB" ]; then
-    # Note that there's also a `vboxmanage guestcontrol updateadditions` command
-    # And, I'm now attaching the Guest additions iso via Packer (but not yet
-    # mounting it). But it's a way to move in a slightly more efficient direction.
     # fi
     V=$(dmidecode | grep vboxVer | sed -e 's/.*_//')
     if [ -z "${V}" ]; then
@@ -83,8 +82,10 @@ echo "$msg"
     umount /mnt && rm /tmp/${ISO} && \
     true # XXX - does this do anything?
 ) && \
-( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
-# XXX - for some reason, while this appears to succeed, I get a FAIL message
+echo DONE: $msg || echo FAIL: $msg
+# ( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
+# XXX - for some reason, while this appears to succeed, I get a FAIL message,
+# maybe it's etckeeper?
 
 # CRAN repo
 # There is no 14.04 CRAN archive yet so it is commented out
@@ -94,8 +95,7 @@ echo "$msg"
 # Prefer rrutter and c2d4u PPAs
 msg="BCE: Installing R PPAs..."
 echo "$msg"
-# XXX This is redundant with c2d4u, right?
-# apt-add-repository -y ppa:marutter/rrutter && \
+apt-add-repository -y ppa:marutter/rrutter && \
 apt-add-repository -y ppa:marutter/c2d4u && \
 ( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
 
@@ -180,6 +180,7 @@ echo "$msg"
 printf "%%sudo\tALL=(ALL:ALL) NOPASSWD: ALL\n" > /etc/sudoers.d/nopasswd && \
 ( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
 
+# XXX - we should also set sensible defaults for gedit
 msg="BCE: Set a 4-space tabstop for nano"
 echo "$msg"
 sed -i -e '/# set tabsize 8/s/.*/set tabsize 4/' /etc/nanorc && \
@@ -209,7 +210,7 @@ echo "$msg"
 (
     # Create a convenient place on the desktop for people to mount
     # their Shared Directories.
-    sudo -u oski mkdir -p /home/oski/Desktop
+    sudo -u oski mkdir /home/oski/Desktop
     sudo -u oski ln -s /media /home/oski/Desktop/Shared
 
     # Fetch and install Xfce configuration
