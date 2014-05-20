@@ -34,16 +34,13 @@
     "guest_additions_mode": "attach",
     "vboxmanage": [
       [
-        "modifyvm",
-        "{{.Name}}",
-        "--memory",
-        "1024",
-        "--cpus",
-        "1",
-        "--clipboard",
-        "bidirectional",
-        "--draganddrop",
-        "hosttoguest"
+        "modifyvm",        "{{.Name}}",
+        "--memory",        "1024",
+        "--cpus",          "1",
+        "--clipboard",     "bidirectional",
+        "--draganddrop",   "hosttoguest",
+        "--vram",          "128",
+        "--accelerate3d",  "on"
       ]
     ],
     "guest_os_type": "Ubuntu_64",

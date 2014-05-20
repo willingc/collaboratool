@@ -69,34 +69,43 @@ echo DONE: $msg || echo FAIL: $msg
 msg="BCE: Installing Guest Additions..."
 echo "$msg"
 (
-    # if [ "${BCE_PROVISION}" != "DLAB" ]; then
-    # fi
-    V=$(dmidecode | grep vboxVer | sed -e 's/.*_//')
-    if [ -z "${V}" ]; then
-        V=$(modinfo vboxguest | grep ^version | sed -e 's/.* //' -e 's/_.*//')
-    fi
+    if [ "${BCE_PROVISION}" == "DLAB" ]; then
+        mount /dev/cdrom /mnt && \
+        /mnt/VBoxLinuxAdditions.run -- --force && \
+        umount /mnt
+    else
+        V=$(dmidecode | grep vboxVer | sed -e 's/.*_//')
+        if [ -z "${V}" ]; then
+            V=$(modinfo vboxguest | grep ^version | sed -e 's/.* //' -e 's/_.*//')
+        fi
 
-    ISO=VBoxGuestAdditions_${V}.iso
-    ISO_URL=http://download.virtualbox.org/virtualbox/${V}/${ISO}
-    curl -L -o /tmp/${ISO} ${ISO_URL} && \
-    mount -o loop,ro /tmp/${ISO} /mnt && \
-    /mnt/VBoxLinuxAdditions.run -- --force && \
-    umount /mnt && rm /tmp/${ISO} && \
-    true # XXX - does this do anything?
+        ISO=VBoxGuestAdditions_${V}.iso
+        ISO_URL=http://download.virtualbox.org/virtualbox/${V}/${ISO}
+        curl -L -o /tmp/${ISO} ${ISO_URL} && \
+        mount -o loop,ro /tmp/${ISO} /mnt && \
+        /mnt/VBoxLinuxAdditions.run -- --force && \
+        umount /mnt && rm /tmp/${ISO} # && \
+        # true # XXX - does this do anything?
+    fi
 ) && \
 echo DONE: $msg || echo FAIL: $msg
 # ( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
-# XXX - for some reason, while this appears to succeed, I get a FAIL message,
-# maybe it's etckeeper?
+# XXX - for some reason, while this appears to succeed, I get a FAIL message.
+# It's NOT etckeeper.
 
 # CRAN repo
 # There is no 14.04 CRAN archive yet so it is commented out
 #apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9 && \
 #echo "#deb http://cran.cnr.berkeley.edu/bin/linux/ubuntu trusty/" > \
 #	/etc/apt/sources.list.d/cran.list && \
-# Prefer rrutter and c2d4u PPAs
+
+# XXX - Note that unlike our method of installing python packages (which we can nail
+# down to specific version numbers), this script will install potentially very
+# different versions of R packages over time, and I don't know how to address
+# that.
 msg="BCE: Installing R PPAs..."
 echo "$msg"
+# Prefer rrutter and c2d4u PPAs
 apt-add-repository -y ppa:marutter/rrutter && \
 apt-add-repository -y ppa:marutter/c2d4u && \
 ( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
@@ -139,10 +148,12 @@ echo "$msg"
 # XXX - Using Packer, we could just put extra scripts in Packer's json config
 # But this needs to be refactored
 # XXX - Also, couldn't we just hard-code a URL?
-if [ "${BCE_PROVISION}" != "DLAB" ]; then
-    RSTUDIO_URL=`python /vagrant/getrstudio`
-else
+if [ "${BCE_PROVISION}" == "DLAB" ]; then
     RSTUDIO_URL=`python /tmp/getrstudio`
+    # Not really necessary, but a good placeholder if this moves
+    rm /tmp/getrstudio
+else
+    RSTUDIO_URL=`python /vagrant/getrstudio`
 fi && \
 curl -L -O ${RSTUDIO_URL} && \
 dpkg -i $(basename ${RSTUDIO_URL}) && \
@@ -162,10 +173,8 @@ for p in ${PIPS} ; do \
 		tee /tmp/pip-out-${p}.log
 done && \
 echo DONE: $msg || echo FAIL: $msg
-# XXX - pip won't change /etc
+# Note, pip won't change /etc
 
-# XXX This currently errors out with
-# update-alternatives: error: no alternatives for x-session-manager
 msg="BCE: Setting Xfce4 as default X session"
 echo "$msg"
 update-alternatives --set x-session-manager /usr/bin/xfce4-session && \
@@ -174,10 +183,13 @@ update-alternatives --set x-session-manager /usr/bin/xfce4-session && \
 msg="BCE: Hide boot messages"
 echo "$msg"
 sed -i \
-	-e '/GRUB_HIDDEN_TIMEOUT=/s/^#//' \
-	-e '/^GRUB_CMDLINE_LINUX_DEFAULT=""/s/""/"quiet splash"/' \
+	-e '/GRUB_HIDDEN_TIMEOUT=/ s/^#//' \
+	-e '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/".*"/"quiet splash"/' \
 	/etc/default/grub && \
 ( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
+# XXX - strangely, this is failing still, I get a mesage that there's nothing to
+# commit, which I guess means our sed rule isn't quite right?
+# I've made an update, but haven't tested it.
 
 msg="BCE: Disable sudo password for those in the sudo group"
 echo "$msg"
@@ -198,12 +210,10 @@ echo "$msg"
       adduser --gecos "" --disabled-password oski && echo oski:oski | chpasswd
       # Enable oski to sudo without a password
       adduser oski sudo
-  fi
-  # XXX - need to create this group in Packer setup, and then do the steps
-  # below? I think maybe just didn't happen because of guest extension failure
-  # Enable oski to mount shared folders
+  fi && \
   adduser oski vboxsf
-  # XXX - This group doesn't exist
+
+  # This group doesn't exist, and isn't documented anywhere
   # Enable oski to login without a password
   # adduser oski nopasswdlogin
 ) && \
