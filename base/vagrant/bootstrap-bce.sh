@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# We set BCE_PROVISION from the shell
+# We set BCE_PROVISION from the shell / Packer
 # BCE_PROVISION="$1"
 
 START_TIME=$(date '+%s')
@@ -23,14 +23,18 @@ START_TIME=$(date '+%s')
 # seaborn > husl moss statsmodels
 # ipython notebook < pyzmq libzmq3-dev
 # apt-get installing python-gtk2-dev is much faster than pip-installing gtk2
+# XXX - In general, we should use debs for non-development packages
 
 # rpy2 20140409: Requires this patch to build. Waiting on next release.
 # https://bitbucket.org/bioinformed/rpy2/commits/c1c9ddf2910cfb68fe56ee4891ed6785a0b8352b
 
-DEBS="${DEBS} curl sqlite3 pandoc r-recommended libjpeg62 fonts-mathjax python-software-properties python-dev python-pip python-setuptools python-pip python-gtk2-dev texlive texlive-latex-base texlive-latex-extra texlive-fonts-extra texlive-fonts-recommended texlive-pictures gedit gedit-plugins gedit-developer-plugins gedit-r-plugin gedit-latex-plugin gedit-source-code-browser-plugin rabbitvcs-gedit thunar-vcs-plugin firefox xpdf evince gv libreoffice libyaml-dev libzmq3-dev libssl-dev libxslt1-dev liblzma-dev lightdm xrdp xfce4 xfce4-terminal xubuntu-default-settings"
+# XXX - currently, you could pass in extra DEBS and PIPS via the environment.
+# But I don't know that this is a good feature.
+DEBS="${DEBS} curl sqlite3 pandoc r-recommended libjpeg62 fonts-mathjax python-software-properties python-dev python-pip python-setuptools python-pip python-gtk2-dev texlive texlive-latex-base texlive-latex-extra texlive-fonts-extra texlive-fonts-recommended texlive-pictures gedit gedit-plugins gedit-developer-plugins gedit-r-plugin gedit-latex-plugin gedit-source-code-browser-plugin rabbitvcs-gedit thunar-vcs-plugin firefox xpdf evince gv libreoffice libyaml-dev libzmq3-dev libssl-dev libxslt1-dev liblzma-dev lightdm xrdp xfce4 xfce4-terminal xubuntu-default-settings default-jre default-jdk"
 # I've reverted to latest IPython here. It's good stuff, and introduces a
 # UI change, so I'd rather users have that
-PIPS="${PIPS} pandas matplotlib scipy rpy2 ipython sphinx scrapy distribute virtualenv apiclient BeautifulSoup boilerpipe bson cluster envoy feedparser flask geopy networkx oauth2 prettytable pygithub pymongo readline requests twitter twitter-text-py uritemplate google-api-python-client jinja facebook nltk ez_setup ipythonblocks scikits.learn sklearn-pandas patsy seaborn pyzmq markdown git+git://github.com/getpelican/pelican.git@011cd50e2e7 ghp-import"
+PIPS="${PIPS} cython pandas matplotlib scipy rpy2 ipython sphinx scrapy distribute virtualenv apiclient BeautifulSoup boilerpipe bson cluster envoy feedparser flask geopy networkx oauth2 prettytable pygithub pymongo readline requests twitter twitter-text-py uritemplate google-api-python-client jinja facebook nltk ez_setup ipythonblocks scikits.learn sklearn-pandas patsy seaborn pyzmq markdown git+git://github.com/getpelican/pelican.git@011cd50e2e7
+ghp-import pytest"
 
 # XXX - apt in general is probably too verbose for our useage - it's hard to
 # detect where actual failures may have occurred. Maybe we can reduce verbosity?
@@ -71,7 +75,7 @@ echo "$msg"
 (
     if [ "${BCE_PROVISION}" == "DLAB" ]; then
         # The guest extensions end up as a second CD/DVD drive
-        # /dev/cdrom / /dev/sr0 is the Ubuntu ISO
+        # /dev/cdrom (aka /dev/sr0) is the Ubuntu ISO
         mount /dev/sr1 /mnt && \
         /mnt/VBoxLinuxAdditions.run -- --force && \
         umount /mnt
@@ -90,7 +94,7 @@ echo "$msg"
         # true # XXX - does this do anything?
     fi
 ) && \
-echo DONE: $msg || echo FAIL: $msg
+echo DONE: $msg || echo "FAIL (but not really?):" $msg
 # ( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
 # XXX - for some reason, while this appears to succeed, I get a FAIL message.
 # It's NOT etckeeper.
@@ -142,14 +146,14 @@ echo DONE: $msg  || echo FAIL: $msg
 # XXX - maybe we should just use Chromium? Did we get a request to do otherwise?
 # Personally, I'd prefer to just stick with the default Firefox.
 # Also - if you haven't run Chrome yet, ipython notebook won't give the
-# option
+# option. I guess we might care about python / NaCl stuff?
 
 # R, RStudio
 msg="BCE: Installing RStudio..."
 echo "$msg"
 # XXX - Using Packer, we could just put extra scripts in Packer's json config
 # But this needs to be refactored
-# XXX - Also, couldn't we just hard-code a URL?
+# XXX - Also, couldn't we (and shouldn't we) just hard-code a URL?
 if [ "${BCE_PROVISION}" == "DLAB" ]; then
     RSTUDIO_URL=`python /tmp/getrstudio`
     # Not really necessary, but a good placeholder if this moves
@@ -164,9 +168,8 @@ dpkg -i $(basename ${RSTUDIO_URL}) && \
 # XXX - Output here is also currently very verbose, maybe we should make pip
 # more quiet?  More importantly, we should probably use the requirements file
 # approach, and include version numbers
-# XXX - Currently boilerpipe complains about lack of Java - we should probably
-# install java (and perhaps scala - though that seems less necessary for JVM
-# language)
+# XXX - Currently boilerpipe complains about lack of Java - I've added
+# default-jre and default-jdk, but haven't checked if working yet
 msg="BCE: Installing Python modules..."
 echo "$msg"
 for p in ${PIPS} ; do \
@@ -189,9 +192,6 @@ sed -i \
 	-e '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/".*"/"quiet splash"/' \
 	/etc/default/grub && \
 ( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
-# XXX - strangely, this is failing still, I get a mesage that there's nothing to
-# commit, which I guess means our sed rule isn't quite right?
-# I've made an update, but haven't tested it.
 
 msg="BCE: Disable sudo password for those in the sudo group"
 echo "$msg"
