@@ -36,7 +36,8 @@ APT_GET="apt-get -qq -y"
 
 # XXX - currently, you could pass in extra DEBS and PIPS via the environment.
 # But I don't know that this is a good feature.
-DEBS="${DEBS} curl sqlite3 pandoc r-recommended libjpeg62 fonts-mathjax python-software-properties python-dev python-pip python-setuptools python-gtk2-dev texlive texlive-latex-base texlive-latex-extra texlive-fonts-extra texlive-fonts-recommended texlive-pictures gedit gedit-plugins gedit-developer-plugins gedit-r-plugin gedit-latex-plugin gedit-source-code-browser-plugin rabbitvcs-gedit thunar-vcs-plugin firefox xpdf evince gv libreoffice libyaml-dev libzmq3-dev libssl-dev libxslt1-dev liblzma-dev lightdm xrdp xfce4 xfce4-terminal xubuntu-default-settings default-jre default-jdk"
+DEBS="${DEBS} curl sqlite3 pandoc r-recommended libjpeg62 fonts-mathjax python-software-properties python-dev python-pip python-setuptools python-gtk2-dev texlive texlive-latex-base texlive-latex-extra texlive-fonts-extra texlive-fonts-recommended texlive-pictures gedit gedit-plugins gedit-developer-plugins gedit-r-plugin gedit-latex-plugin gedit-source-code-browser-plugin rabbitvcs-gedit thunar-vcs-plugin firefox xpdf evince gv libreoffice libyaml-dev libzmq3-dev libssl-dev libxslt1-dev liblzma-dev lightdm xrdp xfce4 xfce4-terminal xubuntu-default-settings default-jre default-jdk thunar-archive-plugin thunar-media-tags-plugin"
+
 # I've reverted to latest IPython here. It's good stuff, and introduces a
 # UI change, so I'd rather users have that
 PIPS="${PIPS} cython pandas matplotlib scipy rpy2 ipython sphinx scrapy distribute virtualenv apiclient BeautifulSoup boilerpipe bson cluster envoy feedparser flask geopy networkx oauth2 prettytable pygithub pymongo readline requests twitter twitter-text-py uritemplate google-api-python-client jinja facebook nltk ez_setup ipythonblocks scikits.learn sklearn-pandas patsy seaborn pyzmq markdown git+git://github.com/getpelican/pelican.git@011cd50e2e7
@@ -81,7 +82,8 @@ echo "$msg"
         # The guest extensions end up as a second CD/DVD drive
         # /dev/cdrom (aka /dev/sr0) is the Ubuntu ISO
         mount /dev/sr1 /mnt && \
-        /mnt/VBoxLinuxAdditions.run -- --force && \
+        /mnt/VBoxLinuxAdditions.run -- --force
+        # We break logical chaining here, because it's never working!
         umount /mnt
     else
         V=$(dmidecode | grep vboxVer | sed -e 's/.*_//')
@@ -94,7 +96,7 @@ echo "$msg"
         curl -L -o /tmp/${ISO} ${ISO_URL} && \
         mount -o loop,ro /tmp/${ISO} /mnt && \
         /mnt/VBoxLinuxAdditions.run -- --force && \
-        umount /mnt && rm /tmp/${ISO}
+        umount /mnt && rm /tmp/${ISO} # XXX: Pretty sure this never gets executed
     fi
 ) && \
 ( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
@@ -104,7 +106,7 @@ echo "$msg"
 # There is no 14.04 CRAN archive yet so it is commented out
 #apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9 && \
 #echo "#deb http://cran.cnr.berkeley.edu/bin/linux/ubuntu trusty/" > \
-#	/etc/apt/sources.list.d/cran.list && \
+#    /etc/apt/sources.list.d/cran.list && \
 
 msg="BCE: Updating OS..."
 echo "$msg"
@@ -124,10 +126,6 @@ echo DONE: $msg  || echo FAIL: $msg
 
 # apt-add-repository requires python-software-properties which is provided in
 # $DEBS.
-# XXX - Dav: Note that unlike our method of installing python packages (which
-# we can nail down to specific version numbers), this script will install
-# potentially very different versions of R packages over time, and I don't know
-# how to address that.
 # XXX - Ryan: "apt-get install foo=1.0.2" can install a specific version of a
 # a package as long as it is available in the repository. But we'd have to
 # ask the *rutter maintainer to keep older packages or setup our own repo to
