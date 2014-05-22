@@ -31,12 +31,15 @@ APT_GET="apt-get -qq -y"
 # apt-get installing python-gtk2-dev is much faster than pip-installing gtk2
 # XXX - In general, we should use debs for non-development packages
 
+# XXX - What's this about? Seems not to hold anymore
 # rpy2 20140409: Requires this patch to build. Waiting on next release.
 # https://bitbucket.org/bioinformed/rpy2/commits/c1c9ddf2910cfb68fe56ee4891ed6785a0b8352b
 
 # XXX - currently, you could pass in extra DEBS and PIPS via the environment.
 # But I don't know that this is a good feature.
-DEBS="${DEBS} curl sqlite3 pandoc r-recommended libjpeg62 fonts-mathjax python-software-properties python-dev python-pip python-setuptools python-gtk2-dev texlive texlive-latex-base texlive-latex-extra texlive-fonts-extra texlive-fonts-recommended texlive-pictures gedit gedit-plugins gedit-developer-plugins gedit-r-plugin gedit-latex-plugin gedit-source-code-browser-plugin rabbitvcs-gedit thunar-vcs-plugin firefox xpdf evince gv libreoffice libyaml-dev libzmq3-dev libssl-dev libxslt1-dev liblzma-dev lightdm xrdp xfce4 xfce4-terminal xubuntu-default-settings default-jre default-jdk thunar-archive-plugin thunar-media-tags-plugin"
+DEBS="${DEBS} curl sqlite3 pandoc r-recommended libjpeg62 fonts-mathjax python-software-properties python-dev python-pip python-setuptools python-gtk2-dev texlive texlive-latex-base texlive-latex-extra texlive-fonts-extra texlive-fonts-recommended texlive-pictures gedit gedit-plugins gedit-developer-plugins gedit-r-plugin gedit-latex-plugin gedit-source-code-browser-plugin rabbitvcs-gedit thunar-vcs-plugin firefox xpdf evince gv libreoffice libyaml-dev libzmq3-dev libssl-dev libxslt1-dev liblzma-dev lightdm xrdp xfce4 xfce4-terminal xubuntu-default-settings default-jre default-jdk thunar-archive-plugin thunar-media-tags-plugin gigolo"
+# Maybe also xfce4-mount-plugin? Doesn't seem to fix the problem with
+# not auto-mounting VBox shared folders.
 
 # I've reverted to latest IPython here. It's good stuff, and introduces a
 # UI change, so I'd rather users have that

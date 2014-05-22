@@ -29,7 +29,7 @@ to produce exactly the following):
     - VirtualBox:
         + Window is resizable for XFCE on Ubuntu (note, not for LXDE).
         + bidirectional clipboard enabled
-        + bidirectional drag-n-drop enabled
+        + bidirectional drag-n-drop enabled (but only working host to guest)
     - Desktop: XFCE
         + One panel with launchers for Terminal, Browser, File Manager, Text
           Editor
@@ -54,6 +54,10 @@ to produce exactly the following):
 ### Future Tasks
 
     - Investigate box file format to reduce size
+    - Problems with GTK error messages (gedit and firefox at least)
+    - Auto-mount filesystems doesn't work (but `sudo mount -t vboxsf <name>
+      <mountpoint>` works)
+    - Get host to guest drag-n-drop working
 
 
 Instructions for building a base OVA for 2-step process (not currently used)
