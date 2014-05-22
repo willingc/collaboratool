@@ -4,6 +4,12 @@
 # BCE_PROVISION="$1"
 
 START_TIME=$(date '+%s')
+
+# apt in general is probably too verbose for our useage - it's hard to detect
+# where actual failures may have occurred. Maybe we can reduce verbosity?
+APT_GET="apt-get -q -y"
+APT_GET="apt-get -qq -y"
+
 # Ubuntu packages
 # rabbitvcs pulls in Ubuntu ipython which we displace later with pip
 # Python packages
@@ -30,23 +36,21 @@ START_TIME=$(date '+%s')
 
 # XXX - currently, you could pass in extra DEBS and PIPS via the environment.
 # But I don't know that this is a good feature.
-DEBS="${DEBS} curl sqlite3 pandoc r-recommended libjpeg62 fonts-mathjax python-software-properties python-dev python-pip python-setuptools python-pip python-gtk2-dev texlive texlive-latex-base texlive-latex-extra texlive-fonts-extra texlive-fonts-recommended texlive-pictures gedit gedit-plugins gedit-developer-plugins gedit-r-plugin gedit-latex-plugin gedit-source-code-browser-plugin rabbitvcs-gedit thunar-vcs-plugin firefox xpdf evince gv libreoffice libyaml-dev libzmq3-dev libssl-dev libxslt1-dev liblzma-dev lightdm xrdp xfce4 xfce4-terminal xubuntu-default-settings default-jre default-jdk"
+DEBS="${DEBS} curl sqlite3 pandoc r-recommended libjpeg62 fonts-mathjax python-software-properties python-dev python-pip python-setuptools python-gtk2-dev texlive texlive-latex-base texlive-latex-extra texlive-fonts-extra texlive-fonts-recommended texlive-pictures gedit gedit-plugins gedit-developer-plugins gedit-r-plugin gedit-latex-plugin gedit-source-code-browser-plugin rabbitvcs-gedit thunar-vcs-plugin firefox xpdf evince gv libreoffice libyaml-dev libzmq3-dev libssl-dev libxslt1-dev liblzma-dev lightdm xrdp xfce4 xfce4-terminal xubuntu-default-settings default-jre default-jdk"
 # I've reverted to latest IPython here. It's good stuff, and introduces a
 # UI change, so I'd rather users have that
 PIPS="${PIPS} cython pandas matplotlib scipy rpy2 ipython sphinx scrapy distribute virtualenv apiclient BeautifulSoup boilerpipe bson cluster envoy feedparser flask geopy networkx oauth2 prettytable pygithub pymongo readline requests twitter twitter-text-py uritemplate google-api-python-client jinja facebook nltk ez_setup ipythonblocks scikits.learn sklearn-pandas patsy seaborn pyzmq markdown git+git://github.com/getpelican/pelican.git@011cd50e2e7
 ghp-import pytest"
 
-# XXX - apt in general is probably too verbose for our useage - it's hard to
-# detect where actual failures may have occurred. Maybe we can reduce verbosity?
 msg="BCE: Updating apt cache..."
 echo $msg
-apt-get update > /dev/null && \
+$APT_GET update > /dev/null && \
 echo DONE: $msg || echo FAIL: $msg
 
 msg="BCE: configure etckeeper with git..."
 echo $msg
 # Track system changes
-apt-get -y install git etckeeper && \
+$APT_GET install git etckeeper && \
 sed -i -e '/^VCS/s/^/#/' -e '/="git"/s/^#//' /etc/etckeeper/etckeeper.conf && \
 cd /etc && \
 git config --global user.name "BCE provisioner" && \
@@ -56,8 +60,8 @@ echo DONE: $msg || echo FAIL: $msg
 
 echo "BCE: Installing build utilities..."
 # This is more robust - redundancy is not a problem!
-apt-get -y install build-essential dkms xserver-xorg dmidecode curl software-properties-common && \
-# apt-get -y install xserver-xorg && \
+$APT_GET install build-essential dkms xserver-xorg dmidecode curl \
+	software-properties-common && \
 echo DONE: $msg || echo FAIL: $msg
 
 # Automate VBox guest additions by downloading the ISO from virtualbox.org.
@@ -90,14 +94,11 @@ echo "$msg"
         curl -L -o /tmp/${ISO} ${ISO_URL} && \
         mount -o loop,ro /tmp/${ISO} /mnt && \
         /mnt/VBoxLinuxAdditions.run -- --force && \
-        umount /mnt && rm /tmp/${ISO} # && \
-        # true # XXX - does this do anything?
+        umount /mnt && rm /tmp/${ISO}
     fi
 ) && \
-echo DONE: $msg || echo "FAIL (but not really?):" $msg
-# ( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
-# XXX - for some reason, while this appears to succeed, I get a FAIL message.
-# It's NOT etckeeper.
+( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
+#echo DONE: $msg || echo "FAIL (but not really?):" $msg
 
 # CRAN repo
 # There is no 14.04 CRAN archive yet so it is commented out
@@ -105,33 +106,37 @@ echo DONE: $msg || echo "FAIL (but not really?):" $msg
 #echo "#deb http://cran.cnr.berkeley.edu/bin/linux/ubuntu trusty/" > \
 #	/etc/apt/sources.list.d/cran.list && \
 
-# XXX - Note that unlike our method of installing python packages (which we can nail
-# down to specific version numbers), this script will install potentially very
-# different versions of R packages over time, and I don't know how to address
-# that.
-msg="BCE: Installing R PPAs..."
+msg="BCE: Updating OS..."
 echo "$msg"
+$APT_GET update && \
+DEBIAN_PRIORITY=high DEBIAN_FRONTEND=noninteractive \
+$APT_GET dist-upgrade && \
+echo DONE: $msg  || echo FAIL: $msg
+# etckeeper above fails because there were no changes to /etc. There are hooks
+# where apt upgrades will be committed automatically with etckeeper. So, we
+# should probably just not include the etckeeper step for pure apt steps.
+
+msg="BCE: Installing scientific packages..."
+echo "$msg"
+$APT_GET install ${DEBS} && \
+$APT_GET clean && \ # I guess we need this to avoid running out of disk space.
+echo DONE: $msg  || echo FAIL: $msg
+
+# apt-add-repository requires python-software-properties which is provided in
+# $DEBS.
+# XXX - Dav: Note that unlike our method of installing python packages (which
+# we can nail down to specific version numbers), this script will install
+# potentially very different versions of R packages over time, and I don't know
+# how to address that.
+# XXX - Ryan: "apt-get install foo=1.0.2" can install a specific version of a
+# a package as long as it is available in the repository. But we'd have to
+# ask the *rutter maintainer to keep older packages or setup our own repo to
+# guarantee those packages would be available.
+msg="BCE: Installing R PPAs..." echo "$msg"
 # Prefer rrutter and c2d4u PPAs
 apt-add-repository -y ppa:marutter/rrutter && \
 apt-add-repository -y ppa:marutter/c2d4u && \
 ( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
-
-msg="BCE: Updating OS..."
-echo "$msg"
-apt-get update && \
-DEBIAN_PRIORITY=high DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade && \
-echo DONE: $msg  || echo FAIL: $msg
-# etckeeper above fails because there were no changes to /etc
-# There are hooks where apt upgrades will be committed automatically with
-# etckeeper. So, we should probably just not include the etckeeper step for pure
-# apt steps
-
-msg="BCE: Installing scientific packages..."
-echo "$msg"
-apt-get -y install ${DEBS} && \
-apt-get clean && \ # I guess we need this to avoid running out of memory
-echo DONE: $msg  || echo FAIL: $msg
-# etckeeper also FAILs because of no changes to etc.
 
 # Google Chrome
 msg="BCE: Installing google chrome..."
@@ -140,11 +145,11 @@ echo "deb http://dl.google.com/linux/chrome/deb/ stable main" > \
 	/etc/apt/sources.list.d/google-chrome.list && \
 curl -L https://dl-ssl.google.com/linux/linux_signing_key.pub | \
 	apt-key add - && \
-apt-get update > /dev/null && \
-apt-get -y install google-chrome-stable && \
+$APT_GET update > /dev/null && \
+$APT_GET install google-chrome-stable && \
 echo DONE: $msg  || echo FAIL: $msg
-# XXX - maybe we should just use Chromium? Did we get a request to do otherwise?
-# Personally, I'd prefer to just stick with the default Firefox.
+# XXX - Dav: maybe we should just use Chromium? Did we get a request to do
+# otherwise? Personally, I'd prefer to just stick with the default Firefox.
 # Also - if you haven't run Chrome yet, ipython notebook won't give the
 # option. I guess we might care about python / NaCl stuff?
 
@@ -173,8 +178,8 @@ dpkg -i $(basename ${RSTUDIO_URL}) && \
 msg="BCE: Installing Python modules..."
 echo "$msg"
 for p in ${PIPS} ; do \
-	printf "%20s =========================================\n" "${p}"
-	pip install --upgrade "${p}" 2>/tmp/pip-err-${p}.log | \
+	echo $p
+	pip -q install --upgrade "${p}" 2>/tmp/pip-err-${p}.log | \
 		tee /tmp/pip-out-${p}.log
 done && \
 echo DONE: $msg || echo FAIL: $msg
@@ -215,7 +220,8 @@ echo "$msg"
   fi && \
   adduser oski vboxsf
 
-  # This group doesn't exist, and isn't documented anywhere
+  # Dav: This group doesn't exist, and isn't documented anywhere
+  # Ryan: It is created in lightdm's postinst.
   # Enable oski to login without a password
   # adduser oski nopasswdlogin
 ) && \
@@ -256,7 +262,7 @@ printf "[SeatDefaults]\nautologin-user=oski\nautologin-user-timeout=0\n" >> \
 ( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
 
 # Clean up the image before we export it
-apt-get clean
+$APT_GET clean
 END_TIME=$(date '+%s')
 
 ELAPSED_SECS=$((END_TIME-START_TIME))
