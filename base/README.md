@@ -56,7 +56,7 @@ to produce exactly the following):
     - Investigate box file format to reduce size
     - Problems with GTK error messages (gedit and firefox at least)
     - Auto-mount filesystems doesn't work (but `sudo mount -t vboxsf <name>
-      <mountpoint>` works)
+      <mountpoint>` works). (Permanent folders do get mounted.)
     - Get host to guest drag-n-drop working
 
 

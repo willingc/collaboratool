@@ -8,7 +8,7 @@ START_TIME=$(date '+%s')
 # apt in general is probably too verbose for our useage - it's hard to detect
 # where actual failures may have occurred. Maybe we can reduce verbosity?
 APT_GET="apt-get -q -y"
-APT_GET="apt-get -qq -y"
+# APT_GET="apt-get -qq -y"
 
 # Ubuntu packages
 # rabbitvcs pulls in Ubuntu ipython which we displace later with pip
@@ -29,7 +29,6 @@ APT_GET="apt-get -qq -y"
 # seaborn > husl moss statsmodels
 # ipython notebook < pyzmq libzmq3-dev
 # apt-get installing python-gtk2-dev is much faster than pip-installing gtk2
-# XXX - In general, we should use debs for non-development packages
 
 # XXX - What's this about? Seems not to hold anymore
 # rpy2 20140409: Requires this patch to build. Waiting on next release.
@@ -37,12 +36,17 @@ APT_GET="apt-get -qq -y"
 
 # XXX - currently, you could pass in extra DEBS and PIPS via the environment.
 # But I don't know that this is a good feature.
-DEBS="${DEBS} curl sqlite3 pandoc r-recommended libjpeg62 fonts-mathjax python-software-properties python-dev python-pip python-setuptools python-gtk2-dev texlive texlive-latex-base texlive-latex-extra texlive-fonts-extra texlive-fonts-recommended texlive-pictures gedit gedit-plugins gedit-developer-plugins gedit-r-plugin gedit-latex-plugin gedit-source-code-browser-plugin rabbitvcs-gedit thunar-vcs-plugin firefox xpdf evince gv libreoffice libyaml-dev libzmq3-dev libssl-dev libxslt1-dev liblzma-dev lightdm xrdp xfce4 xfce4-terminal xubuntu-default-settings default-jre default-jdk thunar-archive-plugin thunar-media-tags-plugin gigolo"
+# XXX - Ryan: "apt-get install foo=1.0.2" can install a specific version of a
+# a package as long as it is available in the repository. But we'd have to
+# ask the *rutter maintainer to keep older packages or setup our own repo to
+# guarantee those packages would be available.
+DEBS="${DEBS} curl sqlite3 pandoc r-recommended libjpeg62 fonts-mathjax python-dev python-pip python-setuptools python-gtk2-dev texlive texlive-latex-base texlive-latex-extra texlive-fonts-extra texlive-fonts-recommended texlive-pictures gedit gedit-plugins gedit-developer-plugins gedit-r-plugin gedit-latex-plugin gedit-source-code-browser-plugin rabbitvcs-gedit thunar-vcs-plugin firefox xpdf evince gv libreoffice libyaml-dev libzmq3-dev libssl-dev libxslt1-dev liblzma-dev lightdm xrdp xfce4 xfce4-terminal xubuntu-default-settings default-jre default-jdk thunar-archive-plugin thunar-media-tags-plugin gigolo"
 # Maybe also xfce4-mount-plugin? Doesn't seem to fix the problem with
 # not auto-mounting VBox shared folders.
 
 # I've reverted to latest IPython here. It's good stuff, and introduces a
-# UI change, so I'd rather users have that
+# UI change, so I'd rather users have that. XXX - should use requirements
+# versions
 PIPS="${PIPS} cython pandas matplotlib scipy rpy2 ipython sphinx scrapy distribute virtualenv apiclient BeautifulSoup boilerpipe bson cluster envoy feedparser flask geopy networkx oauth2 prettytable pygithub pymongo readline requests twitter twitter-text-py uritemplate google-api-python-client jinja facebook nltk ez_setup ipythonblocks scikits.learn sklearn-pandas patsy seaborn pyzmq markdown git+git://github.com/getpelican/pelican.git@011cd50e2e7
 ghp-import pytest"
 
@@ -68,27 +72,29 @@ $APT_GET install build-essential dkms xserver-xorg dmidecode curl \
 	software-properties-common && \
 echo DONE: $msg || echo FAIL: $msg
 
-# Automate VBox guest additions by downloading the ISO from virtualbox.org.
 # An alternative method would be to manually share the directory on the host
 # which actually contains VBoxGuestAdditions.iso. On a Mac that is
 # /Applications/VirtualBox.app/Contents/MacOS/. Just like with the host user's
 # home directory however, there's no convenient variable representing this
 # location within the Shared Folders configuration.
-# Note that there's also a `vboxmanage guestcontrol updateadditions` command
-# And, I'm now attaching the Guest additions iso via Packer (but not yet
-# mounting it). But it's a way to move in a slightly more efficient direction.
+
+# There's also a `vboxmanage guestcontrol updateadditions` command,
+# but that doesn't seem to work from within Packer.
 
 msg="BCE: Installing Guest Additions..."
 echo "$msg"
 (
     if [ "${BCE_PROVISION}" == "DLAB" ]; then
+        # Currently, we attach the Guest additions iso when using Packer.
         # The guest extensions end up as a second CD/DVD drive
-        # /dev/cdrom (aka /dev/sr0) is the Ubuntu ISO
+        # (/dev/cdrom (aka /dev/sr0) is the Ubuntu ISO)
+
         mount /dev/sr1 /mnt && \
         /mnt/VBoxLinuxAdditions.run -- --force
         # We break logical chaining here, because it's never working!
         umount /mnt
     else
+        # Automate VBox guest additions by downloading the ISO from virtualbox.org.
         V=$(dmidecode | grep vboxVer | sed -e 's/.*_//')
         if [ -z "${V}" ]; then
             V=$(modinfo vboxguest | grep ^version | sed -e 's/.* //' -e 's/_.*//')
@@ -119,25 +125,21 @@ $APT_GET dist-upgrade && \
 echo DONE: $msg  || echo FAIL: $msg
 # etckeeper above fails because there were no changes to /etc. There are hooks
 # where apt upgrades will be committed automatically with etckeeper. So, we
-# should probably just not include the etckeeper step for pure apt steps.
+# should not include the etckeeper step for pure apt steps.
+
+# apt-add-repository is included in software-properties-common which is
+# installed in the "Installing build utilities" step.
+msg="BCE: Installing R PPAs..." echo "$msg"
+# Prefer rrutter and c2d4u PPAs
+apt-add-repository -y ppa:marutter/rrutter && \
+apt-add-repository -y ppa:marutter/c2d4u && \
+( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
 
 msg="BCE: Installing scientific packages..."
 echo "$msg"
 $APT_GET install ${DEBS} && \
 $APT_GET clean && \ # I guess we need this to avoid running out of disk space.
 echo DONE: $msg  || echo FAIL: $msg
-
-# apt-add-repository requires python-software-properties which is provided in
-# $DEBS.
-# XXX - Ryan: "apt-get install foo=1.0.2" can install a specific version of a
-# a package as long as it is available in the repository. But we'd have to
-# ask the *rutter maintainer to keep older packages or setup our own repo to
-# guarantee those packages would be available.
-msg="BCE: Installing R PPAs..." echo "$msg"
-# Prefer rrutter and c2d4u PPAs
-apt-add-repository -y ppa:marutter/rrutter && \
-apt-add-repository -y ppa:marutter/c2d4u && \
-( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
 
 # Google Chrome
 msg="BCE: Installing google chrome..."
@@ -149,10 +151,6 @@ curl -L https://dl-ssl.google.com/linux/linux_signing_key.pub | \
 $APT_GET update > /dev/null && \
 $APT_GET install google-chrome-stable && \
 echo DONE: $msg  || echo FAIL: $msg
-# XXX - Dav: maybe we should just use Chromium? Did we get a request to do
-# otherwise? Personally, I'd prefer to just stick with the default Firefox.
-# Also - if you haven't run Chrome yet, ipython notebook won't give the
-# option. I guess we might care about python / NaCl stuff?
 
 # R, RStudio
 msg="BCE: Installing RStudio..."
@@ -171,11 +169,6 @@ curl -L -O ${RSTUDIO_URL} && \
 dpkg -i $(basename ${RSTUDIO_URL}) && \
 ( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
 
-# XXX - Output here is also currently very verbose, maybe we should make pip
-# more quiet?  More importantly, we should probably use the requirements file
-# approach, and include version numbers
-# XXX - Currently boilerpipe complains about lack of Java - I've added
-# default-jre and default-jdk, but haven't checked if working yet
 msg="BCE: Installing Python modules..."
 echo "$msg"
 for p in ${PIPS} ; do \
@@ -214,17 +207,14 @@ msg="BCE: Create oski user"
 echo "$msg"
 (
   if [ "${BCE_PROVISION}" != "DLAB" ]; then
-      # XXX Get explanation from Ryan
       adduser --gecos "" --disabled-password oski && echo oski:oski | chpasswd
       # Enable oski to sudo without a password
       adduser oski sudo
   fi && \
   adduser oski vboxsf
 
-  # Dav: This group doesn't exist, and isn't documented anywhere
-  # Ryan: It is created in lightdm's postinst.
   # Enable oski to login without a password
-  # adduser oski nopasswdlogin
+  adduser oski nopasswdlogin
 ) && \
 ( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
 
@@ -244,17 +234,16 @@ echo "$msg"
     #   whatever it is that XFCE uses.
     # - Benoit prefers black-on-white terminal; easier to see on projectors
 
-    # ~/.config already exists if oski is created by debian installer
-    # And we use a file provisioner to copy our xfce4 files directly there
     # Packer file provisioner copies those files directly to .config
     if [ "${BCE_PROVISION}" != "DLAB" ]; then
-        sudo -u oski mkdir /home/oski/.config
-        sudo -u oski rsync -av /vagrant/dot-config/xfce4 /home/oski/.config/
+        sudo -u oski rsync -av /vagrant/dot-config /home/oski/.config
     fi
 ) && \
 echo DONE: $msg || echo FAIL: $msg
 
 # Automatically login oski at boot
+# XXX - Is there a way to get oski listed in the login screen (it displays guest user
+# if you log out)
 msg="BCE: Automatically login oski at boot"
 echo "$msg"
 printf "[SeatDefaults]\nautologin-user=oski\nautologin-user-timeout=0\n" >> \
