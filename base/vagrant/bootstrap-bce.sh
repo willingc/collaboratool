@@ -163,7 +163,7 @@ if [ "${BCE_PROVISION}" == "DLAB" ]; then
     # Not really necessary, but a good placeholder if this moves
     rm /tmp/getrstudio
 else
-    RSTUDIO_URL=`python /vagrant/getrstudio`
+    RSTUDIO_URL=`python /tmp/getrstudio`
 fi && \
 curl -L -O ${RSTUDIO_URL} && \
 dpkg -i $(basename ${RSTUDIO_URL}) && \

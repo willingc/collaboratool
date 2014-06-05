@@ -3,7 +3,7 @@ Creating BCE VMs with Vagrant
 
 For the Vagrant approach, run:
 
-	$ BCE_PROVISION=SCF  vagrant up
+	$ BCE_PROVISION=BCE  vagrant up
 
 When the build is complete, the builder may connect to the VM by running
 "vagrant ssh" or by connecting with an RDP client to port 53389. The default

@@ -2,7 +2,7 @@
   "builders": [
     {
     "vm_name": "BCE-xubuntu-14.04-amd64",
-    "disk_size": 8000,
+    "disk_size": 16000,
     "output_directory": "packer-ubuntu-14.04-amd64-virtualbox",
     "type": "virtualbox-iso",
     "format": "ova",
@@ -67,7 +67,7 @@
     {
       "type": "shell",
       "script": "bootstrap-bce.sh",
-      "environment_vars": "BCE_PROVISION=DLAB",
+      "environment_vars": "BCE_PROVISION=BCE",
       "execute_command": "echo 'oski' | {{ .Vars }} sudo -E -S bash '{{ .Path }}'"
     }
   ]
