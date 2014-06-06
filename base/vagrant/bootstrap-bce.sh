@@ -235,9 +235,11 @@ echo "$msg"
     # - Benoit prefers black-on-white terminal; easier to see on projectors
 
     # Packer file provisioner copies those files directly to .config
-    if [ "${BCE_PROVISION}" != "DLAB" ]; then
-        sudo -u oski rsync -av /vagrant/dot-config /home/oski/.config
-    fi
+    # assuming standard provisioning will be done with packer
+    # so commenting out this next stanza
+    #if [ "${BCE_PROVISION}" != "DLAB" ]; then
+    #    sudo -u oski rsync -av /vagrant/dot-config /home/oski/.config
+    #fi
 ) && \
 echo DONE: $msg || echo FAIL: $msg
 
