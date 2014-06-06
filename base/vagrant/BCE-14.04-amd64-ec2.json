@@ -1,0 +1,33 @@
+{
+  "builders": [
+    {
+    "type": "amazon-ebs",
+    "access_key": "ADD YOUR KEY",
+    "secret_key": "ADD YOUR SECRET KEY",
+    "ami_name": "bce",
+    "instance_type": "m1.medium",
+    "region": "us-west-2",
+    "source_ami": "ami-f13e4dc1",
+    "ssh_username": "ubuntu",
+    "ami_users": "oski"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "dot-config",
+      "destination": "/home/ubuntu/.config"
+    },
+    {
+      "type": "file",
+      "source": "getrstudio",
+      "destination": "/tmp/getrstudio"
+    },
+    {
+      "type": "shell",
+      "script": "bootstrap-bce.sh",
+      "environment_vars": "BCE_PROVISION=BCE",
+      "execute_command": "echo 'ubuntu' | {{ .Vars }} sudo -E -S bash '{{ .Path }}'"
+    }
+  ]
+}
