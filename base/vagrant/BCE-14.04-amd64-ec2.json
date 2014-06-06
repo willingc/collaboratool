@@ -8,8 +8,7 @@
     "instance_type": "m1.medium",
     "region": "us-west-2",
     "source_ami": "ami-f13e4dc1",
-    "ssh_username": "ubuntu",
-    "ami_users": "oski"
+    "ssh_username": "ubuntu"
     }
   ],
   "provisioners": [
