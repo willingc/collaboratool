@@ -1,6 +1,6 @@
 ---
 layout: default
-title: BCE: The Berkeley Common Environment
+title: Overview
 ---
 ### Why is the website "Collaboratool?"
 

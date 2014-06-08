@@ -1,6 +1,9 @@
-title: Collaboratool
-tagline: Compute environments for portable, reproducible data science
-# pygments: true
+title: BCE
+tagline: A common compute environment for portable, reproducible data science
+markdown: redcarpet
+pygments: true
+redcarpet:
+        extensions: ['smart']
 
 # This is the default format post.
 # For more see: http://jekyllrb.com/docs/permalinks/

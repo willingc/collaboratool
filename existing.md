@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Existing Projects and Tools
+title: Existing Projects
 ---
 ### Virtualized IPython notebooks
 
