@@ -21,6 +21,7 @@ You can restart the VM at any time by opening VirtualBox and clicking on the tab
 ### Sharing folders and copying files between your computer and the VM
 
 One useful thing will be to share folders between the VM and the host machine so that you can access the files on your computer from the VM. Do the following:
+
   * Got to "Devices->Shared Folder Settings" and click on the icon of a folder with a "+" on the right side.
   * Select a folder to share, e.g. your home directory on your computer by clicking on "Folder Path" and choosing "Other" and navigating to the folder of interest. For our purposes here, assume we click on "Documents".
   * Click "make permanent" and "auto-mount" and then click "Ok".
@@ -29,7 +30,3 @@ One useful thing will be to share folders between the VM and the host machine so
   * Alternatively, from the Terminal, you can also see the directory by doing "cd ~/Desktop/shared/sf_Documents" and then "ls" will show you the files. 
 Be careful: unless you selected "read only" at the same time as "make permanent", any changes to the shared folder on the VM affects the folder in the 'real world', namely your computer. 
 
-For those of you familiar with ssh and scp and sftp, you can access the VM directly from a Terminal on your computer (the host) as follows:
-<code>
-ssh -l oski -p 6422 localhost"
-</code>
