@@ -81,41 +81,44 @@ echo DONE: $msg || echo FAIL: $msg
 # There's also a `vboxmanage guestcontrol updateadditions` command,
 # but that doesn't seem to work from within Packer.
 
-msg="BCE: Installing Guest Additions..."
-echo "$msg"
-(
-    if [ "${BCE_PROVISION}" == "DLAB" ]; then
+if [ "${PACKER_BUILDER_TYPE}" == "virtualbox-iso" ]; then
+    msg="BCE: Installing Guest Additions..."
+    echo "$msg"
+    (
+        if [ "${BCE_PROVISION}" == "DLAB" ]; then
         # Currently, we attach the Guest additions iso when using Packer.
         # The guest extensions end up as a second CD/DVD drive
         # (/dev/cdrom (aka /dev/sr0) is the Ubuntu ISO)
 
-        mount /dev/sr1 /mnt && \
-        /mnt/VBoxLinuxAdditions.run -- --force
+            mount /dev/sr1 /mnt && \
+                /mnt/VBoxLinuxAdditions.run -- --force
         # We break logical chaining here, because it's never working!
-        umount /mnt
-    else
+            umount /mnt
+        else
         # Automate VBox guest additions by downloading the ISO from virtualbox.org.
-        V=$(dmidecode | grep vboxVer | sed -e 's/.*_//')
-        if [ -z "${V}" ]; then
-            V=$(modinfo vboxguest | grep ^version | sed -e 's/.* //' -e 's/_.*//')
+            V=$(dmidecode | grep vboxVer | sed -e 's/.*_//')
+            if [ -z "${V}" ]; then
+                V=$(modinfo vboxguest | grep ^version | sed -e 's/.* //' -e 's/_.*//')
+            fi
+            
+            ISO=VBoxGuestAdditions_${V}.iso
+            ISO_URL=http://download.virtualbox.org/virtualbox/${V}/${ISO}
+            curl -L -o /tmp/${ISO} ${ISO_URL} && \
+                mount -o loop,ro /tmp/${ISO} /mnt && \
+                /mnt/VBoxLinuxAdditions.run -- --force && \
+                umount /mnt && rm /tmp/${ISO} # XXX: Pretty sure this never gets executed
         fi
-
-        ISO=VBoxGuestAdditions_${V}.iso
-        ISO_URL=http://download.virtualbox.org/virtualbox/${V}/${ISO}
-        curl -L -o /tmp/${ISO} ${ISO_URL} && \
-        mount -o loop,ro /tmp/${ISO} /mnt && \
-        /mnt/VBoxLinuxAdditions.run -- --force && \
-        umount /mnt && rm /tmp/${ISO} # XXX: Pretty sure this never gets executed
-    fi
-) && \
-( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
+    ) && \
+        ( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
 #echo DONE: $msg || echo "FAIL (but not really?):" $msg
+fi
 
 # CRAN repo
 # There is no 14.04 CRAN archive yet so it is commented out
 #apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9 && \
 #echo "#deb http://cran.cnr.berkeley.edu/bin/linux/ubuntu trusty/" > \
 #    /etc/apt/sources.list.d/cran.list && \
+
 
 msg="BCE: Updating OS..."
 echo "$msg"
@@ -211,8 +214,9 @@ echo "$msg"
       # Enable oski to sudo without a password
       adduser oski sudo
   fi && \
-  adduser oski vboxsf
-
+      if [ "${PACKER_BUILDER_TYPE}" == "virtualbox-iso" ]; then
+          adduser oski vboxsf
+          fi && \
   # Enable oski to login without a password
   adduser oski nopasswdlogin
 ) && \
@@ -223,8 +227,8 @@ echo "$msg"
 (
     # Create a convenient place on the desktop for people to mount
     # their Shared Directories.
-    sudo -u oski mkdir /home/oski/Desktop
-    sudo -u oski ln -s /media /home/oski/Desktop/Shared
+    sudo -u oski mkdir /home/oski/Desktop && \
+    sudo -u oski ln -s /media /home/oski/Desktop/Shared && \
 
     # Fetch and install Xfce configuration
     # - change desktop background from image to solid color
@@ -240,18 +244,25 @@ echo "$msg"
     #if [ "${BCE_PROVISION}" != "DLAB" ]; then
     #    sudo -u oski rsync -av /vagrant/dot-config /home/oski/.config
     #fi
+    rsync -av /home/ubuntu/.config /home/oski && \
+    chown -R oski:oski /home/oski/.config 
 ) && \
 echo DONE: $msg || echo FAIL: $msg
 
 # Automatically login oski at boot
 # XXX - Is there a way to get oski listed in the login screen (it displays guest user
 # if you log out)
-msg="BCE: Automatically login oski at boot"
-echo "$msg"
-printf "[SeatDefaults]\nautologin-user=oski\nautologin-user-timeout=0\n" >> \
+
+if [ "${PACKER_BUILDER_TYPE}" == "virtualbox-iso" ]; then
+    msg="BCE: Automatically login oski at boot"
+    echo "$msg"
+    printf "[SeatDefaults]\nautologin-user=oski\nautologin-user-timeout=0\n" >> \
 	/etc/lightdm/lightdm.conf.d/20-BCE.conf && \
 	#/usr/lib/lightdm/lightdm-set-defaults --autologin oski
-( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
+    echo DONE: $msg || echo FAIL: $msg
+fi
+
+
 
 # Clean up the image before we export it
 $APT_GET clean
