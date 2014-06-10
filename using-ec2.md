@@ -1,3 +1,8 @@
+---
+layout: default
+title: Using EC2
+---
+
 ### Getting the EC2 VM up and running
 
   * Go to [EC2 management console](http://console.aws.amazon.com) and choose the US-West-2 (Oregon) region, as that is where we have posted the BCE AMI. (You'll need to have an account set up.)

@@ -1,3 +1,9 @@
+---
+layout: default
+title: Using VirtualBox
+---
+
+
 ### Getting the VM up and running
 
   * Download and install VirtualBox from the [VirtualBox website](https://www.virtualbox.org/wiki/Downloads). This is the tool the runs the virtual machine for you. 
