@@ -1,3 +1,23 @@
+Overview
+=============================
+
+Both approaches outlined below will retrieve a minimal Ubuntu 14.04 box and provision it utilizing the bootstrap-bce.sh script. The BCE\_PROVISION environment variable serves as a hint to the bootstrap script so that different authors can create different VMs using the same build framework.  
+
+Creating BCE VMs with Packer
+=============================
+
+For a Virtualbox VM, run:
+
+    $ BCE_PROVISION=BCE packer build BCE-14.04-amd64.json
+
+This creates a virtual machine in the OVA format that can be imported into Virtualbox on Windows, Mac, or UNIX.
+
+To create an Amazon EC2 AMI, run:
+
+    $ BCE_PROVISION=BCE packer build BCE-14.04-amd64-ec2.json
+
+Note that currently when you start up a VM from the resulting AMI, you'll need to first login as the 'ubuntu' user and set up SSH keys for the 'oski' user, which is the user provisioned by BCE.
+
 Creating BCE VMs with Vagrant
 =============================
 
@@ -8,15 +28,6 @@ For the Vagrant approach, run:
 When the build is complete, the builder may connect to the VM by running
 "vagrant ssh" or by connecting with an RDP client to port 53389. The default
 username and password for the VM are both "oski".
-
-We're working on an approach with Packer also:
-
-	$ packer build BCE-14.04-amd64.json
-
-Both approaches will retrieve a minimal Ubuntu 14.04 vagrant box and provision it
-utilizing the bootstrap-bce.sh script. The BCE\_PROVISION environment variable
-serves as a hint to the bootstrap script so that different authors can create
-different VMs using the same build framework.
 
 Note that it should be possible to attach the bundled ISO for guest additions
 using something like the following in the JSON "vboxmanage" section:
