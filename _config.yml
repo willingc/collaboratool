@@ -1,5 +1,5 @@
 title: BCE
-tagline: The Berkeley Computational Environment: A common compute environment for portable, reproducible data science
+tagline: "The Berkeley Computational Environment: A common compute environment for portable, reproducible data science"
 markdown: redcarpet
 pygments: true
 redcarpet:
