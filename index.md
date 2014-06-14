@@ -60,7 +60,8 @@ To accomplish this, we envision that BCE will encompass the following:
 ### Who are we?
 
 Collaboratool is a project that started in the
-[D-Lab](http://dlab.berkeley.edu), with collaboration from
-[EECS](http://www.eecs.berkeley.edu), the [Statistical Computing
-Facility](http://statistics.berkeley.edu/computing), Shared Research Computing
-(XXX - link needed!), and [the iSchool](http://ischool.berkeley.edu).
+[D-Lab](http://dlab.berkeley.edu), with collaboration from [Computer Science
+(EECS)](http://www.eecs.berkeley.edu), the [Statistical Computing Facility
+(SCF)](http://statistics.berkeley.edu/computing), [Berkeley Research Computing
+(BRC)](http://research-it.berkeley.edu/brc), and [the
+School of Information](http://ischool.berkeley.edu).
