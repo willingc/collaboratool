@@ -60,11 +60,6 @@
       "destination": "/home/oski/.config"
     },
     {
-      "type": "file",
-      "source": "getrstudio",
-      "destination": "/tmp/getrstudio"
-    },
-    {
       "type": "shell",
       "script": "bootstrap-bce.sh",
       "environment_vars": "BCE_PROVISION=BCE",

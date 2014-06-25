@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# We set BCE_PROVISION from the shell / Packer
-# BCE_PROVISION="$1"
+# We currently set BCE_PROVISION from the shell / Packer as a demonstration of
+# how we might modify execution of this script. But for now, we are not using
+# this value.
 
 START_TIME=$(date '+%s')
 
@@ -61,6 +62,8 @@ echo $msg
 $APT_GET install git etckeeper && \
 sed -i -e '/^VCS/s/^/#/' -e '/="git"/s/^#//' /etc/etckeeper/etckeeper.conf && \
 cd /etc && \
+# XXX - after we're done being the BCE provisioner, should we disable this
+# config? i.e., at the end of this script?
 git config --global user.name "BCE provisioner" && \
 git config --global user.email "bce@lists.berkeley.edu" && \
 etckeeper init && \
@@ -69,7 +72,7 @@ echo DONE: $msg || echo FAIL: $msg
 echo "BCE: Installing build utilities..."
 # This is more robust - redundancy is not a problem!
 $APT_GET install build-essential dkms xserver-xorg dmidecode curl \
-	software-properties-common && \
+    software-properties-common && \
 echo DONE: $msg || echo FAIL: $msg
 
 # An alternative method would be to manually share the directory on the host
@@ -84,37 +87,19 @@ echo DONE: $msg || echo FAIL: $msg
 if [ "${PACKER_BUILDER_TYPE}" == "virtualbox-iso" ]; then
     msg="BCE: Installing Guest Additions..."
     echo "$msg"
-    (
-        if [ "${BCE_PROVISION}" == "DLAB" ]; then
-        # Currently, we attach the Guest additions iso when using Packer.
-        # The guest extensions end up as a second CD/DVD drive
-        # (/dev/cdrom (aka /dev/sr0) is the Ubuntu ISO)
-
-            mount /dev/sr1 /mnt && \
-                /mnt/VBoxLinuxAdditions.run -- --force
-        # We break logical chaining here, because it's never working!
-            umount /mnt
-        else
-        # Automate VBox guest additions by downloading the ISO from virtualbox.org.
-            V=$(dmidecode | grep vboxVer | sed -e 's/.*_//')
-            if [ -z "${V}" ]; then
-                V=$(modinfo vboxguest | grep ^version | sed -e 's/.* //' -e 's/_.*//')
-            fi
-            
-            ISO=VBoxGuestAdditions_${V}.iso
-            ISO_URL=http://download.virtualbox.org/virtualbox/${V}/${ISO}
-            curl -L -o /tmp/${ISO} ${ISO_URL} && \
-                mount -o loop,ro /tmp/${ISO} /mnt && \
-                /mnt/VBoxLinuxAdditions.run -- --force && \
-                umount /mnt && rm /tmp/${ISO} # XXX: Pretty sure this never gets executed
-        fi
-    ) && \
-        ( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
-#echo DONE: $msg || echo "FAIL (but not really?):" $msg
+    # Currently, we attach the Guest additions iso when using Packer.
+    # The guest extensions end up as a second CD/DVD drive
+    # (/dev/cdrom (aka /dev/sr0) is the Ubuntu ISO)
+    mount /dev/sr1 /mnt && \
+    /mnt/VBoxLinuxAdditions.run -- --force
+    # XXX We break logical chaining here, because it's never working!
+    umount /mnt && \
+    ( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
+    #echo DONE: $msg || echo "FAIL (but not really?):" $msg
 fi
 
 # CRAN repo
-# There is no 14.04 CRAN archive yet so it is commented out
+# There was no 14.04 CRAN archive yet so it is commented out
 #apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9 && \
 #echo "#deb http://cran.cnr.berkeley.edu/bin/linux/ubuntu trusty/" > \
 #    /etc/apt/sources.list.d/cran.list && \
@@ -141,16 +126,16 @@ apt-add-repository -y ppa:marutter/c2d4u && \
 msg="BCE: Installing scientific packages..."
 echo "$msg"
 $APT_GET install ${DEBS} && \
-$APT_GET clean && \ # I guess we need this to avoid running out of disk space.
+$APT_GET clean && \ # help avoid running out of disk space
 echo DONE: $msg  || echo FAIL: $msg
 
 # Google Chrome
 msg="BCE: Installing google chrome..."
 echo "$msg"
 echo "deb http://dl.google.com/linux/chrome/deb/ stable main" > \
-	/etc/apt/sources.list.d/google-chrome.list && \
+    /etc/apt/sources.list.d/google-chrome.list && \
 curl -L https://dl-ssl.google.com/linux/linux_signing_key.pub | \
-	apt-key add - && \
+    apt-key add - && \
 $APT_GET update > /dev/null && \
 $APT_GET install google-chrome-stable && \
 echo DONE: $msg  || echo FAIL: $msg
@@ -161,13 +146,8 @@ echo "$msg"
 # XXX - Using Packer, we could just put extra scripts in Packer's json config
 # But this needs to be refactored
 # XXX - Also, couldn't we (and shouldn't we) just hard-code a URL?
-if [ "${BCE_PROVISION}" == "DLAB" ]; then
-    RSTUDIO_URL=`python /tmp/getrstudio`
-    # Not really necessary, but a good placeholder if this moves
-    rm /tmp/getrstudio
-else
-    RSTUDIO_URL=`python /tmp/getrstudio`
-fi && \
+RSTUDIO_URL=http://download1.rstudio.org/rstudio-0.98.932-amd64.deb
+
 curl -L -O ${RSTUDIO_URL} && \
 dpkg -i $(basename ${RSTUDIO_URL}) && \
 ( echo DONE: $msg ; etckeeper commit "$msg" ) || echo FAIL: $msg
@@ -175,9 +155,9 @@ dpkg -i $(basename ${RSTUDIO_URL}) && \
 msg="BCE: Installing Python modules..."
 echo "$msg"
 for p in ${PIPS} ; do \
-	echo $p
-	pip -q install --upgrade "${p}" 2>/tmp/pip-err-${p}.log | \
-		tee /tmp/pip-out-${p}.log
+    echo $p
+    pip -q install --upgrade "${p}" 2>/root/pip-err-${p}.log | \
+        tee /root/pip-out-${p}.log
 done && \
 echo DONE: $msg || echo FAIL: $msg
 # Note, pip won't change /etc
@@ -209,14 +189,9 @@ sed -i -e '/# set tabsize 8/s/.*/set tabsize 4/' /etc/nanorc && \
 msg="BCE: Create oski user"
 echo "$msg"
 (
-  if [ "${BCE_PROVISION}" != "DLAB" ]; then
-      adduser --gecos "" --disabled-password oski && echo oski:oski | chpasswd
-      # Enable oski to sudo without a password
-      adduser oski sudo
+  if [ "${PACKER_BUILDER_TYPE}" == "virtualbox-iso" ]; then
+    adduser oski vboxsf
   fi && \
-      if [ "${PACKER_BUILDER_TYPE}" == "virtualbox-iso" ]; then
-          adduser oski vboxsf
-          fi && \
   # Enable oski to login without a password
   adduser oski nopasswdlogin
 ) && \
@@ -230,22 +205,9 @@ echo "$msg"
     sudo -u oski mkdir /home/oski/Desktop && \
     sudo -u oski ln -s /media /home/oski/Desktop/Shared && \
 
-    # Fetch and install Xfce configuration
-    # - change desktop background from image to solid color
-    # - panel launcher for terminal, file manager, browser, gedit
-    # - remove desktop icon for Trash, File System; leave Home
-    # - change Application Menu widget to use a generic computer icon from
-    #   whatever it is that XFCE uses.
-    # - Benoit prefers black-on-white terminal; easier to see on projectors
-
-    # Packer file provisioner copies those files directly to .config
-    # assuming standard provisioning will be done with packer
-    # so commenting out this next stanza
-    #if [ "${BCE_PROVISION}" != "DLAB" ]; then
-    #    sudo -u oski rsync -av /vagrant/dot-config /home/oski/.config
-    #fi
-    rsync -av /home/ubuntu/.config /home/oski && \
-    chown -R oski:oski /home/oski/.config 
+    # This isn't necessary for the packer-installed files
+    # .config is set up by the Packer file provisioner
+    # chown -R oski:oski /home/oski/.config
 ) && \
 echo DONE: $msg || echo FAIL: $msg
 

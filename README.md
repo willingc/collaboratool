@@ -46,7 +46,7 @@ to produce exactly the following):
         + bidirectional drag-n-drop enabled (but only working host to guest)
     - Desktop: XFCE
         + One panel with launchers for Terminal, Browser, File Manager, Text
-          Editor
+          Editor (gedit)
         + Substitute solid color for background image
         + Remove desktop icon for Trash and File System. Leave Home icon.
         + Benoit and Ryan suggest an icon on the desktop pointing to /media,
@@ -55,6 +55,7 @@ to produce exactly the following):
           projected in class
         + Change the panel's Application menu icon to a generic computer icon
           from XFCE's logo.
+
 
 Move to Issue Tracker
 ---------------------
