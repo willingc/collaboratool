@@ -154,11 +154,8 @@ dpkg -i $(basename ${RSTUDIO_URL}) && \
 
 msg="BCE: Installing Python modules..."
 echo "$msg"
-for p in ${PIPS} ; do \
-    echo $p
-    pip -q install --upgrade "${p}" 2>/root/pip-err-${p}.log | \
-        tee /root/pip-out-${p}.log
-done && \
+pip -q install --upgrade -r /tmp/python-requirements.txt \
+    2>/root/pip-err-${p}.log | tee /root/pip-out-${p}.log && \
 echo DONE: $msg || echo FAIL: $msg
 # Note, pip won't change /etc
 
@@ -199,16 +196,14 @@ echo "$msg"
 
 msg="BCE: Configure oski desktop"
 echo "$msg"
-(
-    # Create a convenient place on the desktop for people to mount
-    # their Shared Directories.
-    sudo -u oski mkdir /home/oski/Desktop && \
-    sudo -u oski ln -s /media /home/oski/Desktop/Shared && \
+# Create a convenient place on the desktop for people to mount
+# their Shared Directories.
+sudo -u oski mkdir /home/oski/Desktop && \
+sudo -u oski ln -s /media /home/oski/Desktop/Shared && \
 
-    # This isn't necessary for the packer-installed files
-    # .config is set up by the Packer file provisioner
-    # chown -R oski:oski /home/oski/.config
-) && \
+# This isn't necessary for the packer-installed files
+# .config is set up by the Packer file provisioner
+# chown -R oski:oski /home/oski/.config
 echo DONE: $msg || echo FAIL: $msg
 
 # Automatically login oski at boot

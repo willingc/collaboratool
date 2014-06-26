@@ -60,6 +60,11 @@
       "destination": "/home/oski/.config"
     },
     {
+      "type": "file",
+      "source": "python-requirements.txt",
+      "destination": "/tmp/python-requirements.txt"
+    },
+    {
       "type": "shell",
       "script": "bootstrap-bce.sh",
       "environment_vars": "BCE_PROVISION=BCE",
