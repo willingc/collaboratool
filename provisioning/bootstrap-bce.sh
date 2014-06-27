@@ -11,45 +11,23 @@ START_TIME=$(date '+%s')
 APT_GET="apt-get -q -y"
 # APT_GET="apt-get -qq -y"
 
-# Ubuntu packages
-# rabbitvcs pulls in Ubuntu ipython which we displace later with pip
-# Python packages
-# < = requires package ; > = pulls in
-# boilerpipe < default-jre default-jdk
-# boilerpipe > JPype1 charade
-# rpy2 < liblzma-dev
-# pyyaml < libyaml-dev
-# pandas > dateutil pytz numpy
-# ipython > tornado pyparsing nose backports.ssl-match-hostname
-# sphinx > Pygments docutils Jinja2 markupsafe
-# scrapy > Twisted w3lib queuelib cssselect
-# scrapy < libxslt1-dev libssl-dev
-# flask > Werkzeug itsdangerous
-# ipythonblocks < ez_setup
-# seaborn < patsy
-# seaborn > husl moss statsmodels
-# ipython notebook < pyzmq libzmq3-dev
-# apt-get installing python-gtk2-dev is much faster than pip-installing gtk2
 
 # XXX - What's this about? Seems not to hold anymore
 # rpy2 20140409: Requires this patch to build. Waiting on next release.
 # https://bitbucket.org/bioinformed/rpy2/commits/c1c9ddf2910cfb68fe56ee4891ed6785a0b8352b
 
-# XXX - currently, you could pass in extra DEBS and PIPS via the environment.
-# But I don't know that this is a good feature.
+# XXX - currently, you could pass in extra DEBS via the environment.  But I
+# don't know that this is a good feature.
 # XXX - Ryan: "apt-get install foo=1.0.2" can install a specific version of a
 # a package as long as it is available in the repository. But we'd have to
 # ask the *rutter maintainer to keep older packages or setup our own repo to
 # guarantee those packages would be available.
+# TODO: Like with python-requirements.txt, this can be moved to a separate file,
+# and installed with apt-get or aptitude:
+# `apt-get/aptitude $(< ubuntu-packages.txt)
 DEBS="${DEBS} curl sqlite3 pandoc r-recommended libjpeg62 fonts-mathjax python-dev python-pip python-setuptools python-gtk2-dev texlive texlive-latex-base texlive-latex-extra texlive-fonts-extra texlive-fonts-recommended texlive-pictures gedit gedit-plugins gedit-developer-plugins gedit-r-plugin gedit-latex-plugin gedit-source-code-browser-plugin rabbitvcs-gedit thunar-vcs-plugin firefox xpdf evince gv libreoffice libyaml-dev libzmq3-dev libssl-dev libxslt1-dev liblzma-dev lightdm xrdp xfce4 xfce4-terminal xubuntu-default-settings default-jre default-jdk thunar-archive-plugin thunar-media-tags-plugin gigolo"
 # Maybe also xfce4-mount-plugin? Doesn't seem to fix the problem with
 # not auto-mounting VBox shared folders.
-
-# I've reverted to latest IPython here. It's good stuff, and introduces a
-# UI change, so I'd rather users have that. XXX - should use requirements
-# versions
-PIPS="${PIPS} cython pandas matplotlib scipy rpy2 ipython sphinx scrapy distribute virtualenv apiclient BeautifulSoup boilerpipe bson cluster envoy feedparser flask geopy networkx oauth2 prettytable pygithub pymongo readline requests twitter twitter-text-py uritemplate google-api-python-client jinja facebook nltk ez_setup ipythonblocks scikits.learn sklearn-pandas patsy seaborn pyzmq markdown git+git://github.com/getpelican/pelican.git@011cd50e2e7
-ghp-import pytest"
 
 msg="BCE: Updating apt cache..."
 echo $msg
@@ -109,7 +87,8 @@ msg="BCE: Updating OS..."
 echo "$msg"
 $APT_GET update && \
 DEBIAN_PRIORITY=high DEBIAN_FRONTEND=noninteractive \
-$APT_GET dist-upgrade && \
+# This is now done via preseed
+# $APT_GET dist-upgrade && \
 echo DONE: $msg  || echo FAIL: $msg
 # etckeeper above fails because there were no changes to /etc. There are hooks
 # where apt upgrades will be committed automatically with etckeeper. So, we
@@ -154,8 +133,8 @@ dpkg -i $(basename ${RSTUDIO_URL}) && \
 
 msg="BCE: Installing Python modules..."
 echo "$msg"
-pip -q install --upgrade -r /tmp/python-requirements.txt \
-    2>/root/pip-err-${p}.log | tee /root/pip-out-${p}.log && \
+pip install --upgrade -r /tmp/python-requirements.txt \
+    2>/root/pip-err.log | tee /root/pip-out.log && \
 echo DONE: $msg || echo FAIL: $msg
 # Note, pip won't change /etc
 
