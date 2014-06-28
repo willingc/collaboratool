@@ -6,11 +6,21 @@ title: Using VirtualBox
 
 ### Getting the VM up and running
 
-  * Download and install VirtualBox from the [VirtualBox website](https://www.virtualbox.org/wiki/Downloads). This is the tool the runs the virtual machine for you. 
-  * Download the BCE VM in the form of an OVA file from [UNDER CONSTRUCTION](BCE-xubuntu-14.04-amd64.ova).
-  * Open VirtualBox and import the BCE-xubuntu-14.04-amd64.ova file you just downloaded by going to "File->Import Appliance" and then selecting the .ova file from wherever you downloaded it to (possible 'Downloads' in your home directory on the machine). 
+  * Download and install VirtualBox from the [VirtualBox
+    website](https://www.virtualbox.org/wiki/Downloads). This is the tool the
+    runs the virtual machine for you. 
+  * Download the BCE VM in the form of an OVA file, [currently hosted on
+    @davclark's Box.net account](https://berkeley.box.com/s/ybysi4qcv75vw84tjl5h).
+  * Open VirtualBox and import the BCE-xubuntu-14.04-amd64.ova file you just
+    downloaded by going to "File->Import Appliance" and then selecting the .ova
+    file from wherever you downloaded it to (possible 'Downloads' in your home
+    directory on the machine). 
   * Wait a few minutes...
-  * Start the virtual machine by clicking on the tab for "BCE-xubuntu-14.04-amd64" on the left side and then clicking "Start" at the top. This will start a virtual Linux computer within your own machine. After a few seconds you should see black screen and then soon you'll see the desktop of the VM.
+  * Start the virtual machine by clicking on the tab for
+    "BCE-xubuntu-14.04-amd64" on the left side and then clicking "Start" at the
+    top. This will start a virtual Linux computer within your own machine. After
+    a few seconds you should see black screen and then soon you'll see the
+    desktop of the VM.
 
 You now have a machine that has all the software installed as part of BCE, including IPython and useful Python packages and R, RStudio and useful R packages.
 
